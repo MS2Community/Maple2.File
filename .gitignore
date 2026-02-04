@@ -330,3 +330,4 @@ ASALocalRun/
 .mfractor/
 .env
 payload.json
+.claude/settings.local.json

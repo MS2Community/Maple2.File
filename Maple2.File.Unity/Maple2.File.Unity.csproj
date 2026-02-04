@@ -3,7 +3,7 @@
     <PropertyGroup>
         <PackageId>Maple2.File.Unity</PackageId>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <LangVersion>10</LangVersion>
+        <LangVersion>12</LangVersion>
         <Title>MapleStory2 File Parser for Unity</Title>
         <Authors>Tadeucci</Authors>
         <Description>Lightweight MapleStory2 m2d XBlock Parser for Unity</Description>
@@ -17,6 +17,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Maple2.File.IO\Maple2.File.IO.csproj" />
       <ProjectReference Include="..\Maple2.File.Flat\Maple2.File.Flat.csproj" />
+      <ProjectReference Include="..\Maple2.File.Generator\Maple2.File.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" SkipGetTargetFrameworkProperties="true" />
     </ItemGroup>
 
     <!-- Include only XBlock-related files from Parser -->
@@ -34,6 +35,14 @@
         <!-- Tools (needed by Flat and MapXBlock) -->
         <Compile Include="..\Maple2.File.Parser\Tools\HierarchyMap.cs" Link="Tools\HierarchyMap.cs" />
         <Compile Include="..\Maple2.File.Parser\Tools\ILEmitter.cs" Link="Tools\ILEmitter.cs" />
+        <Compile Include="..\Maple2.File.Parser\Tools\Sanitizer.cs" Link="Tools\Sanitizer.cs" />
+
+        <!-- MapParser and dependencies -->
+        <Compile Include="..\Maple2.File.Parser\MapParser.cs" Link="MapParser.cs" />
+        <Compile Include="..\Maple2.File.Parser\Xml\Map\*.cs" Link="Xml\Map\%(Filename)%(Extension)" />
+        <Compile Include="..\Maple2.File.Parser\Xml\String\StringMapping.cs" Link="Xml\String\StringMapping.cs" />
+        <Compile Include="..\Maple2.File.Parser\Xml\String\Key.cs" Link="Xml\String\Key.cs" />
+        <Compile Include="..\Maple2.File.Parser\Enum\*.cs" Link="Enum\%(Filename)%(Extension)" />
     </ItemGroup>
 
 </Project>
