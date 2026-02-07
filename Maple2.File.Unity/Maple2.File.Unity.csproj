@@ -38,6 +38,11 @@
         <Compile Include="..\Maple2.File.Parser\Tools\Sanitizer.cs" Link="Tools\Sanitizer.cs" />
         <Compile Include="..\Maple2.File.Parser\Tools\Filter.cs" Link="Tools\Filter.cs" />
 
+        <!-- NpcParser and dependencies -->
+        <Compile Include="..\Maple2.File.Parser\NpcParser.cs" Link="NpcParser.cs" />
+        <Compile Include="..\Maple2.File.Parser\Xml\Npc\*.cs" Link="Xml\Npc\%(Filename)%(Extension)" />
+        <Compile Include="..\Maple2.File.Parser\Xml\Common\StatValue.cs" Link="Xml\Common\StatValue.cs" />
+
         <!-- Filter dependencies (FeatureSetting, Feature) -->
         <Compile Include="..\Maple2.File.Parser\Xml\Table\FeatureSetting.cs" Link="Xml\Table\FeatureSetting.cs" />
         <Compile Include="..\Maple2.File.Parser\Xml\Table\Feature.cs" Link="Xml\Table\Feature.cs" />
