@@ -42,10 +42,14 @@
         <Compile Include="..\Maple2.File.Parser\NpcParser.cs" Link="NpcParser.cs" />
         <Compile Include="..\Maple2.File.Parser\Xml\Npc\*.cs" Link="Xml\Npc\%(Filename)%(Extension)" />
         <Compile Include="..\Maple2.File.Parser\Xml\Common\StatValue.cs" Link="Xml\Common\StatValue.cs" />
+        <Compile Include="..\Maple2.File.Parser\Xml\Common\ItemOption.cs" Link="Xml\Common\ItemOption.cs" />
+        <Compile Include="..\Maple2.File.Parser\Xml\Common\ItemOptionNew.cs" Link="Xml\Common\ItemOptionNew.cs" />
 
-        <!-- Filter dependencies (FeatureSetting, Feature) -->
-        <Compile Include="..\Maple2.File.Parser\Xml\Table\FeatureSetting.cs" Link="Xml\Table\FeatureSetting.cs" />
-        <Compile Include="..\Maple2.File.Parser\Xml\Table\Feature.cs" Link="Xml\Table\Feature.cs" />
+        <!-- All table XML types (needed by TableParser) -->
+        <Compile Include="..\Maple2.File.Parser\Xml\Table\*.cs" Link="Xml\Table\%(Filename)%(Extension)" />
+
+        <!-- TableParser -->
+        <Compile Include="..\Maple2.File.Parser\TableParser.cs" Link="TableParser.cs" />
 
         <!-- MapParser and dependencies -->
         <Compile Include="..\Maple2.File.Parser\MapParser.cs" Link="MapParser.cs" />
