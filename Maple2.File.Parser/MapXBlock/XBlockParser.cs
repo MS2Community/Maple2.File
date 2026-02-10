@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Xml;
 using System.Xml.Serialization;
 using Maple2.File.Flat;
 using Maple2.File.IO;
@@ -170,5 +171,35 @@ public class XBlockParser {
         }
 
         field.SetValue(entity, value);
+    }
+
+    public void ParseXml(XmlReader xmlReader, Action<IEnumerable<IMapEntity>> callback) {
+        if (serializer.Deserialize(xmlReader) is GameXBlock block) {
+            var unknownModels = new HashSet<string>();
+            var entities = block.entitySet.entity
+                .Where(entity => {
+                    try {
+                        Type mixinType = lookup.GetMixinType(entity.modelName);
+                        return includeEntities.Count == 0 || includeEntities.Any(keep => keep.IsAssignableFrom(mixinType));
+                    } catch {
+                        return false;
+                    }
+                })
+                .Select(entity => {
+                    try {
+                        return GetInstance(entity);
+                    } catch (UnknownModelTypeException ex) {
+                        if (unknownModels.Add(entity.modelName)) {
+                            OnError?.Invoke(ex.Message);
+                        }
+                        return null;
+                    }
+                })
+                .Where(entity => entity != null);
+
+            callback(entities);
+        } else {
+            callback(Array.Empty<IMapEntity>());
+        }
     }
 }
