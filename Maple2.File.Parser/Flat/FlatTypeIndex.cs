@@ -1,4 +1,6 @@
-﻿using System.Data;
+using System.Data;
+using System.Drawing;
+using System.Numerics;
 using System.Xml;
 using Maple2.File.IO;
 using Maple2.File.IO.Crypto.Common;
@@ -7,9 +9,12 @@ using Maple2.File.Parser.Tools;
 namespace Maple2.File.Parser.Flat;
 
 public class FlatTypeIndex {
+    private const uint MAGIC = 0x00495446;
+    private const int VERSION = 1;
+
     public readonly HierarchyMap<FlatType> Hierarchy;
 
-    private readonly string root; // flat, flat/library, flat/presets
+    private readonly string root;
     private readonly Dictionary<string, FlatTypeNode> typeNodes;
 
     public bool MinimizeProperties { get; set; } = false;
@@ -24,6 +29,374 @@ public class FlatTypeIndex {
                 typeNodes[mixin.Name.ToLower()].Children.Add(typeNode);
             }
         }
+    }
+
+    private FlatTypeIndex(string root, Dictionary<string, FlatTypeNode> typeNodes) {
+        this.root = root;
+        this.typeNodes = typeNodes;
+        Hierarchy = new HierarchyMap<FlatType>();
+
+        foreach (FlatTypeNode typeNode in typeNodes.Values) {
+            Hierarchy.Add(typeNode.Value.Path, typeNode.Value);
+        }
+
+        foreach (FlatTypeNode typeNode in typeNodes.Values) {
+            foreach (FlatType mixin in typeNode.Value.Mixin) {
+                typeNodes[mixin.Name.ToLower()].Children.Add(typeNode);
+            }
+        }
+    }
+
+    public void Serialize(BinaryWriter writer) {
+        writer.Write(MAGIC);
+        writer.Write(VERSION);
+        writer.Write(root ?? string.Empty);
+        writer.Write(typeNodes.Count);
+
+        foreach (FlatTypeNode typeNode in typeNodes.Values) {
+            SerializeFlatType(writer, typeNode.Value);
+        }
+    }
+
+    public static FlatTypeIndex Deserialize(BinaryReader reader) {
+        uint magic = reader.ReadUInt32();
+        if (magic != MAGIC) {
+            throw new InvalidDataException($"Invalid FlatTypeIndex magic: expected {MAGIC:X}, got {magic:X}");
+        }
+
+        int version = reader.ReadInt32();
+        if (version != VERSION) {
+            throw new InvalidDataException($"Unsupported FlatTypeIndex version: {version}");
+        }
+
+        string root = reader.ReadString();
+        int typeCount = reader.ReadInt32();
+
+        var typeNodes = new Dictionary<string, FlatTypeNode>(typeCount);
+        var mixinNames = new Dictionary<FlatType, List<string>>(typeCount);
+
+        for (int i = 0; i < typeCount; i++) {
+            var (type, mixins) = DeserializeFlatType(reader);
+            typeNodes[type.Name.ToLower()] = new FlatTypeNode(type);
+            mixinNames[type] = mixins;
+        }
+
+        foreach (var (type, mixins) in mixinNames) {
+            foreach (string mixinName in mixins) {
+                string key = mixinName.ToLower();
+                if (!typeNodes.TryGetValue(key, out FlatTypeNode mixinNode)) {
+                    throw new InvalidDataException($"Mixin '{mixinName}' not found in cache (data corruption?)");
+                }
+                type.Mixin.Add(mixinNode.Value);
+            }
+        }
+
+        return new FlatTypeIndex(root, typeNodes);
+    }
+
+    private static void SerializeFlatType(BinaryWriter writer, FlatType type) {
+        writer.Write(type.Name);
+        writer.Write(type.Id);
+        writer.Write(type.Path ?? string.Empty);
+
+        writer.Write(type.Trait.Count);
+        foreach (string trait in type.Trait) {
+            writer.Write(trait ?? string.Empty);
+        }
+
+        writer.Write(type.Mixin.Count);
+        foreach (FlatType mixin in type.Mixin) {
+            writer.Write(mixin.Name ?? string.Empty);
+        }
+
+        writer.Write(type.Properties.Count);
+        foreach (FlatProperty property in type.Properties.Values) {
+            SerializeProperty(writer, property);
+        }
+
+        writer.Write(type.Behaviors.Count);
+        foreach (FlatBehavior behavior in type.Behaviors.Values) {
+            SerializeBehavior(writer, behavior);
+        }
+    }
+
+    private static (FlatType Type, List<string> MixinNames) DeserializeFlatType(BinaryReader reader) {
+        string name = reader.ReadString();
+        uint id = reader.ReadUInt32();
+        string path = reader.ReadString();
+
+        var type = new FlatType(name, id) {
+            Path = path,
+        };
+
+        int traitCount = reader.ReadInt32();
+        for (int i = 0; i < traitCount; i++) {
+            type.Trait.Add(reader.ReadString());
+        }
+
+        int mixinCount = reader.ReadInt32();
+        var mixinNames = new List<string>(mixinCount);
+        for (int i = 0; i < mixinCount; i++) {
+            mixinNames.Add(reader.ReadString());
+        }
+
+        int propertyCount = reader.ReadInt32();
+        for (int i = 0; i < propertyCount; i++) {
+            FlatProperty property = DeserializeProperty(reader);
+            type.Properties.Add(property.Name, property);
+        }
+
+        int behaviorCount = reader.ReadInt32();
+        for (int i = 0; i < behaviorCount; i++) {
+            FlatBehavior behavior = DeserializeBehavior(reader);
+            type.Behaviors.Add(behavior.Name, behavior);
+        }
+
+        return (type, mixinNames);
+    }
+
+    private static void SerializeProperty(BinaryWriter writer, FlatProperty property) {
+        writer.Write(property.Name ?? string.Empty);
+        writer.Write(property.Id ?? string.Empty);
+
+        writer.Write(property.Source != null);
+        if (property.Source != null) {
+            writer.Write(property.Source);
+        }
+
+        writer.Write(property.Type ?? string.Empty);
+
+        writer.Write(property.Trait.Count);
+        foreach (string trait in property.Trait) {
+            writer.Write(trait ?? string.Empty);
+        }
+
+        SerializePropertyValue(writer, property.Type, property.Value);
+    }
+
+    private static FlatProperty DeserializeProperty(BinaryReader reader) {
+        string name = reader.ReadString();
+        string id = reader.ReadString();
+        bool hasSource = reader.ReadBoolean();
+        string source = hasSource ? reader.ReadString() : null;
+        string type = reader.ReadString();
+
+        var property = new FlatProperty {
+            Name = name,
+            Id = id,
+            Source = source,
+            Type = type,
+        };
+
+        int traitCount = reader.ReadInt32();
+        for (int i = 0; i < traitCount; i++) {
+            property.Trait.Add(reader.ReadString());
+        }
+
+        property.Value = DeserializePropertyValue(reader, type);
+
+        return property;
+    }
+
+    private static void SerializePropertyValue(BinaryWriter writer, string type, object value) {
+        switch (type) {
+            case "Boolean":
+                writer.Write((bool) value);
+                break;
+            case "UInt16":
+                writer.Write((ushort) value);
+                break;
+            case "UInt32":
+                writer.Write((uint) value);
+                break;
+            case "SInt32":
+                writer.Write((int) value);
+                break;
+            case "Float32":
+                writer.Write((float) value);
+                break;
+            case "Float64":
+                writer.Write((double) value);
+                break;
+            case "Point3": {
+                Vector3 v = (Vector3) value;
+                writer.Write(v.X);
+                writer.Write(v.Y);
+                writer.Write(v.Z);
+                break;
+            }
+            case "Point2": {
+                Vector2 v = (Vector2) value;
+                writer.Write(v.X);
+                writer.Write(v.Y);
+                break;
+            }
+            case "Color": {
+                Color c = (Color) value;
+                writer.Write(c.R);
+                writer.Write(c.G);
+                writer.Write(c.B);
+                break;
+            }
+            case "ColorA": {
+                Color c = (Color) value;
+                writer.Write(c.A);
+                writer.Write(c.R);
+                writer.Write(c.G);
+                writer.Write(c.B);
+                break;
+            }
+            case "String":
+            case "EntityRef":
+            case "AssetID":
+                writer.Write((string) value ?? string.Empty);
+                break;
+            case "AssocString":
+            case "AssocEntityRef":
+            case "AssocAttachedNifAsset": {
+                var dict = (Dictionary<string, string>) value;
+                writer.Write(dict.Count);
+                foreach (var kvp in dict) {
+                    writer.Write(kvp.Key ?? string.Empty);
+                    writer.Write(kvp.Value ?? string.Empty);
+                }
+                break;
+            }
+            case "AssocPoint3": {
+                var dict = (Dictionary<string, Vector3>) value;
+                writer.Write(dict.Count);
+                foreach (var kvp in dict) {
+                    writer.Write(kvp.Key ?? string.Empty);
+                    writer.Write(kvp.Value.X);
+                    writer.Write(kvp.Value.Y);
+                    writer.Write(kvp.Value.Z);
+                }
+                break;
+            }
+            case "AssocUInt32": {
+                var dict = (Dictionary<string, uint>) value;
+                writer.Write(dict.Count);
+                foreach (var kvp in dict) {
+                    writer.Write(kvp.Key ?? string.Empty);
+                    writer.Write(kvp.Value);
+                }
+                break;
+            }
+            case "AssocSInt32": {
+                var dict = (Dictionary<string, int>) value;
+                writer.Write(dict.Count);
+                foreach (var kvp in dict) {
+                    writer.Write(kvp.Key ?? string.Empty);
+                    writer.Write(kvp.Value);
+                }
+                break;
+            }
+            default:
+                throw new ArgumentException($"Unknown property type for serialization: {type}");
+        }
+    }
+
+    private static object DeserializePropertyValue(BinaryReader reader, string type) {
+        switch (type) {
+            case "Boolean":
+                return reader.ReadBoolean();
+            case "UInt16":
+                return reader.ReadUInt16();
+            case "UInt32":
+                return reader.ReadUInt32();
+            case "SInt32":
+                return reader.ReadInt32();
+            case "Float32":
+                return reader.ReadSingle();
+            case "Float64":
+                return reader.ReadDouble();
+            case "Point3":
+                return new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+            case "Point2":
+                return new Vector2(reader.ReadSingle(), reader.ReadSingle());
+            case "Color":
+                return Color.FromArgb(reader.ReadByte(), reader.ReadByte(), reader.ReadByte());
+            case "ColorA":
+                return Color.FromArgb(reader.ReadByte(), reader.ReadByte(), reader.ReadByte(), reader.ReadByte());
+            case "String":
+            case "EntityRef":
+            case "AssetID":
+                return reader.ReadString();
+            case "AssocString":
+            case "AssocEntityRef":
+            case "AssocAttachedNifAsset": {
+                int count = reader.ReadInt32();
+                var dict = new Dictionary<string, string>(count);
+                for (int i = 0; i < count; i++) {
+                    dict[reader.ReadString()] = reader.ReadString();
+                }
+                return dict;
+            }
+            case "AssocPoint3": {
+                int count = reader.ReadInt32();
+                var dict = new Dictionary<string, Vector3>(count);
+                for (int i = 0; i < count; i++) {
+                    dict[reader.ReadString()] = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+                }
+                return dict;
+            }
+            case "AssocUInt32": {
+                int count = reader.ReadInt32();
+                var dict = new Dictionary<string, uint>(count);
+                for (int i = 0; i < count; i++) {
+                    dict[reader.ReadString()] = reader.ReadUInt32();
+                }
+                return dict;
+            }
+            case "AssocSInt32": {
+                int count = reader.ReadInt32();
+                var dict = new Dictionary<string, int>(count);
+                for (int i = 0; i < count; i++) {
+                    dict[reader.ReadString()] = reader.ReadInt32();
+                }
+                return dict;
+            }
+            default:
+                throw new ArgumentException($"Unknown property type for deserialization: {type}");
+        }
+    }
+
+    private static void SerializeBehavior(BinaryWriter writer, FlatBehavior behavior) {
+        writer.Write(behavior.Name ?? string.Empty);
+        writer.Write(behavior.Id ?? string.Empty);
+        writer.Write(behavior.Type ?? string.Empty);
+
+        writer.Write(behavior.Source != null);
+        if (behavior.Source != null) {
+            writer.Write(behavior.Source);
+        }
+
+        writer.Write(behavior.Trait.Count);
+        foreach (string trait in behavior.Trait) {
+            writer.Write(trait ?? string.Empty);
+        }
+    }
+
+    private static FlatBehavior DeserializeBehavior(BinaryReader reader) {
+        string name = reader.ReadString();
+        string id = reader.ReadString();
+        string type = reader.ReadString();
+        bool hasSource = reader.ReadBoolean();
+        string source = hasSource ? reader.ReadString() : null;
+
+        int traitCount = reader.ReadInt32();
+        var traits = new List<string>(traitCount);
+        for (int i = 0; i < traitCount; i++) {
+            traits.Add(reader.ReadString());
+        }
+
+        return new FlatBehavior {
+            Name = name,
+            Id = id,
+            Type = type,
+            Source = source,
+            Trait = traits,
+        };
     }
 
     public IEnumerable<FlatType> GetAllTypes() {
