@@ -90,7 +90,18 @@ public class XBlockParser {
     }
 
     private IEnumerable<IMapEntity> ParseEntities(PackFileEntry file) {
-        if (serializer.Deserialize(reader.GetXmlReader(file)) is GameXBlock block) {
+        GameXBlock block;
+        try {
+            block = serializer.Deserialize(reader.GetXmlReader(file)) as GameXBlock;
+        } catch (Exception ex) {
+            OnError?.Invoke($"Failed to deserialize xblock '{file.Name}': {ex.Message}");
+            if (ex.InnerException != null) {
+                OnError?.Invoke($"  Inner: {ex.InnerException.Message}");
+            }
+            return Array.Empty<IMapEntity>();
+        }
+
+        if (block != null) {
             var unknownModels = new HashSet<string>();
             return block.entitySet.entity
                 .Where(entity => {
@@ -103,7 +114,7 @@ public class XBlockParser {
                 })
                 .Select(entity => {
                     try {
-                        return GetInstance(entity);
+                        return GetInstance(entity, file.Name);
                     } catch (UnknownModelTypeException ex) {
                         // Reduce noise from this exception to once per file
                         if (unknownModels.Add(entity.modelName)) {
@@ -118,7 +129,7 @@ public class XBlockParser {
         return Array.Empty<IMapEntity>();
     }
 
-    private IMapEntity GetInstance(Entity entity) {
+    private IMapEntity GetInstance(Entity entity, string mapId) {
         Type entityType = lookup.GetClass(entity.modelName);
 
         var mapEntity = (IMapEntity) Activator.CreateInstance(entityType);
@@ -141,7 +152,7 @@ public class XBlockParser {
 
             FlatProperty modelProperty = baseType.GetProperty(property.name);
             if (modelProperty == null) {
-                OnError?.Invoke($"Ignoring unknown property {property.name}");
+                OnError?.Invoke($"Ignoring unknown property {property.name} on {entity.modelName} from map {mapId}");
                 continue;
             }
 
@@ -187,7 +198,7 @@ public class XBlockParser {
                 })
                 .Select(entity => {
                     try {
-                        return GetInstance(entity);
+                        return GetInstance(entity, "XML Input");
                     } catch (UnknownModelTypeException ex) {
                         if (unknownModels.Add(entity.modelName)) {
                             OnError?.Invoke(ex.Message);
