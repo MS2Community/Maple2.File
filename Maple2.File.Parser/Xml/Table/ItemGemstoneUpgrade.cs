@@ -13,7 +13,7 @@ public partial class ItemGemstoneUpgrade : IFeatureLocale {
     [XmlAttribute] public int ItemId;
     [XmlAttribute] public short GemLevel;
     [XmlAttribute] public int NextItemID;
-    [XmlAttribute] public int EquipPart;
+    [M2dArray] public int[] EquipPart;
     [XmlAttribute] public string IconId = string.Empty;
     [M2dArray(Delimiter = ':')] public string[] IngredientItemID1;
     [XmlAttribute] public int IngredientCount1;
