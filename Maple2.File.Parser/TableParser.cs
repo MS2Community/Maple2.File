@@ -57,6 +57,7 @@ public class TableParser {
     private readonly XmlSerializer masteryRewardSerializer;
     private readonly XmlSerializer paletteSerializer;
     private readonly XmlSerializer petExpSerializer;
+    private readonly XmlSerializer petEvolutionSerializer;
     private readonly XmlSerializer petPropertySerializer;
     private readonly XmlSerializer petSpawnInfoSerializer;
     private readonly XmlSerializer premiumClubEffectSerializer;
@@ -176,6 +177,7 @@ public class TableParser {
         masteryRewardSerializer = new XmlSerializer(typeof(MasteryRewardRoot));
         paletteSerializer = new XmlSerializer(typeof(ColorPaletteRoot));
         petExpSerializer = new XmlSerializer(typeof(PetExpRoot));
+        petEvolutionSerializer = new XmlSerializer(typeof(PetEvolutionRoot));
         petPropertySerializer = new XmlSerializer(typeof(PetPropertyRoot));
         petSpawnInfoSerializer = new XmlSerializer(typeof(PetSpawnInfoRoot));
         premiumClubEffectSerializer = new XmlSerializer(typeof(PremiumClubEffectRoot));
@@ -758,6 +760,16 @@ public class TableParser {
 
         foreach (PetExp exp in data.exp) {
             yield return (exp.level, exp);
+        }
+    }
+
+    public IEnumerable<(short RequireItemLevel, PetEvolution Evolution)> ParsePetEvolution() {
+        XmlReader reader = xmlReader.GetXmlReader(xmlReader.GetEntry("table/petevolution.xml"));
+        var data = petEvolutionSerializer.Deserialize(reader) as PetEvolutionRoot;
+        Debug.Assert(data != null);
+
+        foreach (PetEvolution evolution in data.petEvolution) {
+            yield return (evolution.requireItemLevel, evolution);
         }
     }
 

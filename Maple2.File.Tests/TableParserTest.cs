@@ -349,6 +349,9 @@ public class TableParserTest {
         foreach ((_, _) in _parser.ParsePetSpawnInfo()) {
             continue;
         }
+        foreach ((_, _) in _parser.ParsePetEvolution()) {
+            continue;
+        }
     }
 
     [TestMethod]
