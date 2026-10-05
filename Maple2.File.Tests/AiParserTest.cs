@@ -120,5 +120,33 @@ public class AiParserTest {
 
         Assert.IsTrue(foundAnyNodes);
     }
+
+    // Horus (AI_GriffonPharaoh01Boss) idx 10 carries no faceTarget attribute and retail aims it at
+    // cast start (GMS2 sniff "14-Horus's Nest"); its idx 9 sets faceTarget="0" explicitly. The two
+    // must parse differently.
+    [TestMethod]
+    public void TestSkillFaceTargetDefaultsToAim() {
+        var parser = new AiParser(TestUtils.ServerReader);
+        NpcAi horus = parser.Parse()
+            .First(ai => ai.AiName == "BossDungeon/GriffonPharaoh01Boss/AI_GriffonPharaoh01Boss.xml").Data;
+
+        List<SkillNode> skills = Flatten(horus.Battle.Entries).OfType<SkillNode>().ToList();
+        List<SkillNode> absent = skills.Where(skill => skill.idx == 10).ToList();
+        List<SkillNode> explicitZero = skills.Where(skill => skill.idx == 9).ToList();
+
+        Assert.AreEqual(2, absent.Count);
+        Assert.IsTrue(absent.All(skill => skill.faceTarget == 1), "a skill node without faceTarget must default to 1");
+        Assert.AreEqual(6, explicitZero.Count);
+        Assert.IsTrue(explicitZero.All(skill => skill.faceTarget == 0), "an explicit faceTarget=\"0\" must stay 0");
+    }
+
+    private static IEnumerable<Entry> Flatten(IEnumerable<Entry> entries) {
+        foreach (Entry entry in entries) {
+            yield return entry;
+            foreach (Entry child in Flatten(entry.Entries)) {
+                yield return child;
+            }
+        }
+    }
 }
 
