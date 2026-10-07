@@ -397,6 +397,18 @@ public class TableParserTest {
     }
 
     [TestMethod]
+    public void TestParseTitleName() {
+        Dictionary<int, string> names = _parser.ParseTitleName().ToDictionary(entry => entry.Id, entry => entry.Name);
+
+        // Rows of titlename.xml, read against feature.xml under Live NA.
+        Assert.AreEqual("Ace Archer", names[10000655]);
+        // feature="Fame_Geo01", which is NA="99".
+        Assert.IsFalse(names.ContainsKey(10000754));
+        // locale="CN" only.
+        Assert.IsFalse(names.ContainsKey(10000750));
+    }
+
+    [TestMethod]
     public void TestIndividualItemDrop() {
         foreach ((_, _) in _parser.ParseIndividualItemDrop()) {
             continue;
