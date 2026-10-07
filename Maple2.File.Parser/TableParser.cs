@@ -882,6 +882,18 @@ public class TableParser {
         }
     }
 
+    // One entry per title id that survives the feature and locale filter, which is also the set the
+    // client can name. A title missing here shows no row in the client's title dropdown.
+    public IEnumerable<(int Id, string Name)> ParseTitleName() {
+        XmlReader reader = xmlReader.GetXmlReader(xmlReader.GetEntry($"{language}/titlename.xml"));
+        var mapping = nameSerializer.Deserialize(reader) as StringMapping;
+        Debug.Assert(mapping != null);
+
+        foreach (Key key in mapping.key) {
+            yield return (int.Parse(key.id), key.name);
+        }
+    }
+
     public IEnumerable<(int Id, IDictionary<byte, List<IndividualItemDrop>>)> ParseIndividualItemDrop() {
         string xml = Sanitizer.RemoveEmpty(xmlReader.GetString(xmlReader.GetEntry("table/individualitemdrop.xml")));
         xml = Sanitizer.SanitizeBool(xml);
