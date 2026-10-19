@@ -66,6 +66,7 @@ public class ServerTableParser {
     private readonly XmlSerializer maidGradeInfoSerializer;
     private readonly XmlSerializer maidRecipeSerializer;
     private readonly XmlSerializer defaultCharacterInfoSerializer;
+    private readonly XmlSerializer dungeonScaleStatSerializer;
 
     public ServerTableParser(M2dReader xmlReader) {
         this.xmlReader = xmlReader;
@@ -113,6 +114,7 @@ public class ServerTableParser {
         maidGradeInfoSerializer = new XmlSerializer(typeof(MaidGradeInfoRoot));
         maidRecipeSerializer = new XmlSerializer(typeof(MaidRecipeRoot));
         defaultCharacterInfoSerializer = new XmlSerializer(typeof(DefaultCharacterInfoRoot));
+        dungeonScaleStatSerializer = new XmlSerializer(typeof(DungeonScaleStatRoot));
 
         // var seen = new HashSet<string>();
         // this.bankTypeSerializer.UnknownAttribute += (sender, args) => {
@@ -766,6 +768,16 @@ public class ServerTableParser {
 
         foreach (DefaultCharacterInfo info in data.gender) {
             yield return (info.value, info);
+        }
+    }
+
+    public IEnumerable<(int Id, DungeonScaleStat ScaleStat)> ParseDungeonScaleStat() {
+        XmlReader reader = xmlReader.GetXmlReader(xmlReader.GetEntry("table/Server/DungeonScaleStat.xml"));
+        var data = dungeonScaleStatSerializer.Deserialize(reader) as DungeonScaleStatRoot;
+        Debug.Assert(data != null);
+
+        foreach (DungeonScaleStat entry in data.DungeonScaleStat) {
+            yield return (entry.dungeonScaleStatID, entry);
         }
     }
 }

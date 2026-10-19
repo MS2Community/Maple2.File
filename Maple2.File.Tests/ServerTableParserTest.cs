@@ -513,5 +513,21 @@ public class ServerTableParserTest {
         Assert.AreNotEqual(Vector3.Zero, hair.controls.control[0].position);
         Assert.AreNotEqual(Vector3.Zero, hair.controls.control[0].rotation);
     }
+
+    [TestMethod]
+    public void TestDungeonScaleStat() {
+        var parser = new ServerTableParser(TestUtils.ServerReader);
+
+        Dictionary<int, DungeonScaleStat> scaleStats = parser.ParseDungeonScaleStat()
+            .ToDictionary(entry => entry.Id, entry => entry.ScaleStat);
+
+        // Retail row: <DungeonScaleStat dungeonScaleStatID="6001" scaleStatRate="8.0" scaleBaseTap="1911810"
+        // scaleBaseDef="2552" scaleBaseSpaRate="0.35" />
+        DungeonScaleStat row = scaleStats[6001];
+        Assert.AreEqual(8.0f, row.scaleStatRate);
+        Assert.AreEqual(1911810L, row.scaleBaseTap);
+        Assert.AreEqual(2552L, row.scaleBaseDef);
+        Assert.AreEqual(0.35f, row.scaleBaseSpaRate);
+    }
 }
 
