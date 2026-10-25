@@ -10,7 +10,6 @@ namespace Maple2.File.Tests;
 // set (SpawnPointID / NpcList / NpcCount / SpawnRadius). Neither the flat definition nor any mixin
 // declares those, so RuntimeClassLookup patches them into the type index. See MS2Community/
 // PrivateMaple2#270.
-#pragma warning disable CS0618 // properties are intentionally marked obsolete
 [TestClass]
 public class InteractActorSpawnerTest {
     [TestMethod]
@@ -68,4 +67,3 @@ public class InteractActorSpawnerTest {
         }
     }
 }
-#pragma warning restore CS0618
