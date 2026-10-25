@@ -19,5 +19,5 @@ public partial class FishingSpot : IFeatureLocale {
     [XmlAttribute] public int globalDropBoxId;
     [XmlAttribute] public int individualDropBoxId;
     [XmlAttribute] public int spotLevel;
-    [XmlAttribute] public bool spotDropRank;
+    [XmlAttribute] public int spotDropRank;
 }
