@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Numerics;
 using Maple2.File.Parser.Flat;
 using Maple2.File.Parser.Flat.Convert;
