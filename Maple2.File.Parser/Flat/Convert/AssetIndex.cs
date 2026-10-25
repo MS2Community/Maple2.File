@@ -157,9 +157,11 @@ public class AssetIndex {
         return (name, path, string.Join(':', tags));
     }
 
-    private static Dictionary<string, string> ParseNtFile(string data) {
+    internal static Dictionary<string, string> ParseNtFile(string data) {
         var result = new Dictionary<string, string>();
-        foreach (string line in data.Split("\n")) {
+        foreach (string rawLine in data.Split("\n")) {
+            // Repacked archives can carry CRLF line endings, which the trailing ".$" would reject.
+            string line = rawLine.TrimEnd('\r');
             if (string.IsNullOrWhiteSpace(line)) {
                 continue;
             }

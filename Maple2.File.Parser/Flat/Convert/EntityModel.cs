@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Globalization;
 using System.Numerics;
 using System.Xml;
 using System.Xml.Schema;
@@ -177,7 +178,7 @@ public class Value : IXmlSerializable {
                 case long:
                 case float:
                 case double:
-                    writer.WriteAttributeString("Value", value.ToString());
+                    writer.WriteAttributeString("Value", System.Convert.ToString(value, CultureInfo.InvariantCulture));
                     break;
                 case Vector3 point3:
                     writer.WriteStartElement("X");

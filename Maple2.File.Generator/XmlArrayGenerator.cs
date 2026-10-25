@@ -66,7 +66,16 @@ public string _{xmlAttributeName} {{
 
     private void AddSerializer(StringBuilder source, IFieldSymbol field, char delimiter) {
         string fieldName = $"this.{field.FieldName()}";
+        var arrayType = field.Type as IArrayTypeSymbol;
+        if (arrayType != null && IsFloatingPoint(arrayType.ElementType)) {
+            source.Append(@$"       return {fieldName} != null ? string.Join('{delimiter}', global::System.Linq.Enumerable.Select({fieldName}, v => v.ToString(global::System.Globalization.CultureInfo.InvariantCulture))) : string.Empty;");
+            return;
+        }
         source.Append(@$"       return {fieldName} != null ? string.Join('{delimiter}', {fieldName}) : string.Empty;");
+    }
+
+    private static bool IsFloatingPoint(ITypeSymbol type) {
+        return type.SpecialType is SpecialType.System_Single or SpecialType.System_Double or SpecialType.System_Decimal;
     }
 
     private void AddDeserializer(GeneratorExecutionContext context, StringBuilder source, IFieldSymbol field, char delimiter, bool keepEmpty) {
@@ -101,7 +110,7 @@ if (int.TryParse(val, out int n)) {{
             if (arrayType.ElementType.ToString() == "bool") {
                 source.AppendLine($@"{fieldName}[i] = bool.TryParse(val, out bool result) ? result : (val != ""0"");");
             } else {
-                source.AppendLine($"{fieldName}[i] = {arrayType.ElementType}.Parse(val);");
+                source.AppendLine($"{fieldName}[i] = {arrayType.ElementType}.Parse(val, global::System.Globalization.CultureInfo.InvariantCulture);");
             }
         } else {
             source.AppendLine($"{fieldName}[i] = val;");

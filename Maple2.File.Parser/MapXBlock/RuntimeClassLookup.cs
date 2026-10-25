@@ -35,19 +35,21 @@ public sealed class RuntimeClassLookup : ClassLookup {
         var npcCount = new FlatProperty { Name = "NpcCount", Type = "UInt32", Value = (uint) 0 };
         var reactableSequenceName = new FlatProperty { Name = "reactableSequenceName", Type = "String", Value = "" };
 
+        // TryAdd because the index is shared: a second lookup over the same index, or an index
+        // serialized after a lookup patched it, already carries these properties.
         FlatType ms2CubeProp = index.GetType("MS2CubeProp");
-        ms2CubeProp.Properties.Add(proxyNifAsset.Name, proxyNifAsset);
-        ms2CubeProp.Properties.Add(interval.Name, interval);
-        ms2CubeProp.Properties.Add(friendly.Name, friendly);
+        ms2CubeProp.Properties.TryAdd(proxyNifAsset.Name, proxyNifAsset);
+        ms2CubeProp.Properties.TryAdd(interval.Name, interval);
+        ms2CubeProp.Properties.TryAdd(friendly.Name, friendly);
         FlatType eventSpawnPointItem = index.GetType("EventSpawnPointItem");
-        eventSpawnPointItem.Properties.Add(dropID.Name, dropID);
+        eventSpawnPointItem.Properties.TryAdd(dropID.Name, dropID);
         FlatType ms2Actor = index.GetType("MS2Actor");
-        ms2Actor.Properties.Add(npcList.Name, npcList);
-        ms2Actor.Properties.Add(spawnPointID.Name, spawnPointID);
-        ms2Actor.Properties.Add(proxyNifAsset.Name, proxyNifAsset);
-        ms2Actor.Properties.Add(spawnRadius.Name, spawnRadius);
-        ms2Actor.Properties.Add(npcCount.Name, npcCount);
-        ms2Actor.Properties.Add(reactableSequenceName.Name, reactableSequenceName);
+        ms2Actor.Properties.TryAdd(npcList.Name, npcList);
+        ms2Actor.Properties.TryAdd(spawnPointID.Name, spawnPointID);
+        ms2Actor.Properties.TryAdd(proxyNifAsset.Name, proxyNifAsset);
+        ms2Actor.Properties.TryAdd(spawnRadius.Name, spawnRadius);
+        ms2Actor.Properties.TryAdd(npcCount.Name, npcCount);
+        ms2Actor.Properties.TryAdd(reactableSequenceName.Name, reactableSequenceName);
         // Some MS2InteractActor entities double as NPC spawn points (e.g.
         // 11000119_MS2InteractActor_Moonrabbit on 80000022_bonus) and carry the SpawnPointNPC
         // property set, which the flat definition does not declare.
