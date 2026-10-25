@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Text;
+﻿using System.Text;
 using System.Xml;
 using Maple2.File.IO.Crypto;
 using Maple2.File.IO.Crypto.Common;
@@ -12,9 +11,6 @@ namespace Maple2.File.IO {
         public readonly IReadOnlyList<PackFileEntry> Files;
 
         public M2dReader(string path) {
-            // Force Globalization to en-US because we use periods instead of commas for decimals
-            CultureInfo.CurrentCulture = new("en-US");
-
             m2dFile = System.IO.File.OpenRead(path);
 
             // Create an index from the header file

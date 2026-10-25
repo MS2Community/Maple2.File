@@ -1,5 +1,6 @@
 ﻿using Maple2.File.Parser.Xml.AI;
 using System.Diagnostics;
+using System.Globalization;
 using System.Numerics;
 using System.Reflection;
 using Maple2.File.IO;
@@ -211,14 +212,14 @@ public class AiParser {
                     field.SetValue(result, outLong);
                     break;
                 case "Single":
-                    if (!float.TryParse(attrib.Value, out float outFloat)) {
+                    if (!float.TryParse(attrib.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out float outFloat)) {
                         throw new InvalidDataException($"invalid float '{attrib.Value}' for {typeof(T).Name} member {field.Name}");
                     }
 
                     field.SetValue(result, outFloat);
                     break;
                 case "Vector3":
-                    float[] floatValues = Array.ConvertAll(attrib.Value.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries), float.Parse);
+                    float[] floatValues = Array.ConvertAll(attrib.Value.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries), value => float.Parse(value, CultureInfo.InvariantCulture));
 
                     if (floatValues.Length != 3) {
                         throw new InvalidDataException($"invalid Vector3 '{attrib.Value}' for {typeof(T).Name} member {field.Name}");

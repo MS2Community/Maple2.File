@@ -13,7 +13,7 @@
         <PackageTags>MapleStory2, File, Parser, m2d, xml</PackageTags>
         <!-- Use following lines to write the generated files to disk. -->
         <EmitCompilerGeneratedFiles Condition=" '$(Configuration)' == 'Debug' ">true</EmitCompilerGeneratedFiles>
-        <PackageVersion>2.4.29</PackageVersion>
+        <PackageVersion>2.4.30</PackageVersion>
         <TargetFramework>net8.0</TargetFramework>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -45,6 +45,10 @@
 
     <ItemGroup>
         <None Include="..\README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Maple2.File.Tests" />
     </ItemGroup>
 
 </Project>

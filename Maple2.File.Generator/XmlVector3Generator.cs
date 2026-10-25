@@ -50,12 +50,12 @@ public class XmlVector3Generator : XmlGenerator {
         source.Append($@"
 [XmlAttribute(""{xmlAttributeName}"")]
 public string _{xmlAttributeName} {{
-    get => $""{{{fieldName}.X}},{{{fieldName}.Y}},{{{fieldName}.Z}}"";
+    get => global::System.FormattableString.Invariant($""{{{fieldName}.X}},{{{fieldName}.Y}},{{{fieldName}.Z}}"");
     set {{
         string[] split = value.Split(new[] {{',', ' '}}, StringSplitOptions.RemoveEmptyEntries);
-        float x = split.Length > 0 ? float.Parse(split[0]) : 0;
-        float y = split.Length > 1 ? float.Parse(split[1]) : 0;
-        float z = split.Length > 2 ? float.Parse(split[2]) : 0;
+        float x = split.Length > 0 ? float.Parse(split[0], global::System.Globalization.CultureInfo.InvariantCulture) : 0;
+        float y = split.Length > 1 ? float.Parse(split[1], global::System.Globalization.CultureInfo.InvariantCulture) : 0;
+        float z = split.Length > 2 ? float.Parse(split[2], global::System.Globalization.CultureInfo.InvariantCulture) : 0;
         {fieldName} =  new System.Numerics.Vector3(x, y, z);
     }}
 }}");

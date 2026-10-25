@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Drawing;
+using System.Globalization;
 using System.Numerics;
 using System.Text.RegularExpressions;
 
@@ -25,9 +26,9 @@ public class FlatProperty {
             case "SInt32":
                 return int.Parse(value);
             case "Float32":
-                return float.Parse(value);
+                return float.Parse(value, CultureInfo.InvariantCulture);
             case "Float64":
-                return double.Parse(value);
+                return double.Parse(value, CultureInfo.InvariantCulture);
             case "Point3":
                 float[] point3 = FloatList(value);
                 return new Vector3(point3[0], point3[1], point3[2]);
@@ -91,7 +92,7 @@ public class FlatProperty {
         string[] split = value.Split(", ");
         float[] result = new float[split.Length];
         for (int i = 0; i < split.Length; i++) {
-            result[i] = float.Parse(split[i]);
+            result[i] = float.Parse(split[i], CultureInfo.InvariantCulture);
         }
 
         return result;
@@ -108,7 +109,7 @@ public class FlatProperty {
     }
 
     public string ValueCodeString() {
-        string value = Value.ToString();
+        string value = System.Convert.ToString(Value, CultureInfo.InvariantCulture);
         if (Value is float) {
             value = Regex.Replace(value, "(\\d+\\.\\d+)", "$1f");
         }

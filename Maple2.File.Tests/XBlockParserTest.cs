@@ -35,6 +35,17 @@ public class XBlockParserTest {
         });
     }
 
+    [TestMethod]
+    public void TestXBlockParsersShareIndex() {
+        var index = new FlatTypeIndex(TestUtils.ExportedReader);
+        _ = new XBlockParser(TestUtils.ExportedReader, index);
+        var second = new XBlockParser(TestUtils.ExportedReader, index);
+
+        int count = 0;
+        second.ParseMap("02000070_in", entities => count = entities.Count());
+        Assert.IsTrue(count > 0);
+    }
+
     [Ignore]
     public void TestXBlockParserAll() {
         var sw = new Stopwatch();
