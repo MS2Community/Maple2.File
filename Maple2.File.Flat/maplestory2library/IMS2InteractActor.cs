@@ -12,17 +12,13 @@ namespace Maple2.File.Flat.maplestory2library {
         bool MinimapInVisible => true;
         bool Transparency => true;
         bool UseInstancing => false;
-        // Manually added: a handful of MS2InteractActor entities double as NPC spawn points and
-        // carry the SpawnPointNPC property set (e.g. 11000119_MS2InteractActor_Moonrabbit on
-        // 80000022_bonus). Neither the flat definition nor any mixin declares them, so they are
-        // patched into the type index by RuntimeClassLookup the same way MS2Actor's are.
-        [Obsolete("This property should not exist")]
+        // Manually added: 11000119_MS2InteractActor_Moonrabbit on 80000022_bonus doubles as an NPC
+        // spawn point and carries the SpawnPointNPC property set. The flat definition and its
+        // mixins do not declare these, so RuntimeClassLookup patches them into the type index.
+        // They are real data and the server reads them, so they are not marked obsolete.
         IDictionary<string, string> NpcList => new Dictionary<string, string>();
-        [Obsolete("This property should not exist")]
         int SpawnPointID => 0;
-        [Obsolete("This property should not exist")]
         float SpawnRadius => 0;
-        [Obsolete("This property should not exist")]
         uint NpcCount => 0;
     }
 }

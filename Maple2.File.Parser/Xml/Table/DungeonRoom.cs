@@ -75,15 +75,17 @@ public partial class DungeonRoom : IFeatureLocale {
     [XmlAttribute] public string openPeriodDate = string.Empty;
     [XmlAttribute] public bool isDisableFindHelper;
     [XmlAttribute] public int extraRewardTicketBaseCount; // 0
+    // Absent from the GMS2 table, set on 18 rows of Lith's and 34 of KMS2's.
+    [XmlAttribute] public int extraRewardTicketTableID;
+    // No row sets these two in GMS2, KMS2 or Lith. PrivateMaple2 still maps both into its metadata.
+    [XmlAttribute] public bool dungeonHelperManualChange;
+    [XmlAttribute] public bool isUseFindMember;
 
     // Not in XML
     // enum extraRewardItemType
-    [XmlAttribute][Obsolete("Unused")] public int extraRewardTicketTableID;
     [XmlAttribute][Obsolete("Unused")] public bool isLimitTime;
     [XmlAttribute][Obsolete("Unused")] public bool isTimeUp;
     [XmlAttribute][Obsolete("Unused")] public bool isRandomField;
-    [XmlAttribute][Obsolete("Unused")] public bool dungeonHelperManualChange;
-    [XmlAttribute][Obsolete("Unused")] public bool isUseFindMember;
     [M2dArray][Obsolete("Unused")] public int[] findHelperRewardDropBoxIds;
     [M2dArray][Obsolete("Unused")] public int[] findHelperExtraRewardDropBoxIds;
     [XmlAttribute][Obsolete("Unused")] public bool isDisableRandomMatch;
