@@ -9,9 +9,9 @@ public class ShadowExpeditionDropRoot {
     [XmlElement] public List<ShadowExpeditionDrop> shadowExpeditionDrop;
 }
 
-// class is the killed NPC's basic class: 1 normal, 3 elite, 6 boss.
 public partial class ShadowExpeditionDrop {
     [XmlAttribute] public int step;
-    [XmlAttribute("class")] public int npcClass;
+    // The killed NPC's basic class: 1, 3 or 6, the classes whose npc rankIcon is c, b and a (normal, elite, boss).
+    [XmlAttribute("class")] public int @class;
     [M2dArray] public int[] dropBoxId = Array.Empty<int>();
 }

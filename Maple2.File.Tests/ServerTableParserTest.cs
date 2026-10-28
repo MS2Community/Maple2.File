@@ -274,13 +274,18 @@ public class ServerTableParserTest {
 
         // <shadowExpeditionDrop step="1" class="1" dropBoxId="920001001" />
         Assert.AreEqual(1, drops[0].step);
-        Assert.AreEqual(1, drops[0].npcClass);
+        Assert.AreEqual(1, drops[0].@class);
         CollectionAssert.AreEqual(new[] { 920001001 }, drops[0].dropBoxId);
+
+        // <shadowExpeditionDrop step="1" class="3" dropBoxId="920001002,920003001" />
+        Assert.AreEqual(1, drops[1].step);
+        Assert.AreEqual(3, drops[1].@class);
+        CollectionAssert.AreEqual(new[] { 920001002, 920003001 }, drops[1].dropBoxId);
 
         // <shadowExpeditionDrop step="34" class="6" dropBoxId="920001002,920006034,920000034,820000034" />
         ShadowExpeditionDrop last = drops[^1];
         Assert.AreEqual(34, last.step);
-        Assert.AreEqual(6, last.npcClass);
+        Assert.AreEqual(6, last.@class);
         CollectionAssert.AreEqual(new[] { 920001002, 920006034, 920000034, 820000034 }, last.dropBoxId);
     }
 
