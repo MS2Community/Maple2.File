@@ -266,6 +266,25 @@ public class ServerTableParserTest {
     }
 
     [TestMethod]
+    public void TestShadowExpeditionDrop() {
+        var parser = new ServerTableParser(TestUtils.ServerReader);
+
+        List<ShadowExpeditionDrop> drops = parser.ParseShadowExpeditionDrop().ToList();
+        Assert.AreEqual(102, drops.Count);
+
+        // <shadowExpeditionDrop step="1" class="1" dropBoxId="920001001" />
+        Assert.AreEqual(1, drops[0].step);
+        Assert.AreEqual(1, drops[0].npcClass);
+        CollectionAssert.AreEqual(new[] { 920001001 }, drops[0].dropBoxId);
+
+        // <shadowExpeditionDrop step="34" class="6" dropBoxId="920001002,920006034,920000034,820000034" />
+        ShadowExpeditionDrop last = drops[^1];
+        Assert.AreEqual(34, last.step);
+        Assert.AreEqual(6, last.npcClass);
+        CollectionAssert.AreEqual(new[] { 920001002, 920006034, 920000034, 820000034 }, last.dropBoxId);
+    }
+
+    [TestMethod]
     public void TestSpawnInteractObject() {
         var parser = new ServerTableParser(TestUtils.ServerReader);
 

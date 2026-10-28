@@ -43,6 +43,7 @@ public class ServerTableParser {
     private readonly XmlSerializer spawnNpcSerializer;
     private readonly XmlSerializer spawnInteractObjectSerializer;
     private readonly XmlSerializer groupSpawnSerializer;
+    private readonly XmlSerializer shadowExpeditionDropSerializer;
     private readonly XmlSerializer fishSerializer;
     private readonly XmlSerializer fishingSpotSerializer;
     private readonly XmlSerializer fishLureSerializer;
@@ -91,6 +92,7 @@ public class ServerTableParser {
         spawnNpcSerializer = new XmlSerializer(typeof(SpawnNpcRoot));
         spawnInteractObjectSerializer = new XmlSerializer(typeof(SpawnInteractObjectRoot));
         groupSpawnSerializer = new XmlSerializer(typeof(GroupSpawnRoot));
+        shadowExpeditionDropSerializer = new XmlSerializer(typeof(ShadowExpeditionDropRoot));
         fishSerializer = new XmlSerializer(typeof(FishRoot));
         fishingSpotSerializer = new XmlSerializer(typeof(FishingSpotRoot));
         fishLureSerializer = new XmlSerializer(typeof(FishLureRoot));
@@ -508,6 +510,17 @@ public class ServerTableParser {
 
         foreach (GroupSpawn spawn in data.group) {
             yield return (spawn.groupId, spawn);
+        }
+    }
+
+    public IEnumerable<ShadowExpeditionDrop> ParseShadowExpeditionDrop() {
+        string xml = Sanitizer.RemoveEmpty(xmlReader.GetString(xmlReader.GetEntry("table/Server/shadowExpeditionDrop.xml")));
+        var reader = XmlReader.Create(new StringReader(xml));
+        var data = shadowExpeditionDropSerializer.Deserialize(reader) as ShadowExpeditionDropRoot;
+        Debug.Assert(data != null);
+
+        foreach (ShadowExpeditionDrop drop in data.shadowExpeditionDrop) {
+            yield return drop;
         }
     }
 
