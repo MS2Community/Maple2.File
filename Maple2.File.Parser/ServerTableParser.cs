@@ -44,6 +44,7 @@ public class ServerTableParser {
     private readonly XmlSerializer spawnInteractObjectSerializer;
     private readonly XmlSerializer groupSpawnSerializer;
     private readonly XmlSerializer shadowExpeditionDropSerializer;
+    private readonly XmlSerializer additionalEffectGroupSerializer;
     private readonly XmlSerializer fishSerializer;
     private readonly XmlSerializer fishingSpotSerializer;
     private readonly XmlSerializer fishLureSerializer;
@@ -93,6 +94,7 @@ public class ServerTableParser {
         spawnInteractObjectSerializer = new XmlSerializer(typeof(SpawnInteractObjectRoot));
         groupSpawnSerializer = new XmlSerializer(typeof(GroupSpawnRoot));
         shadowExpeditionDropSerializer = new XmlSerializer(typeof(ShadowExpeditionDropRoot));
+        additionalEffectGroupSerializer = new XmlSerializer(typeof(AdditionalEffectGroupRoot));
         fishSerializer = new XmlSerializer(typeof(FishRoot));
         fishingSpotSerializer = new XmlSerializer(typeof(FishingSpotRoot));
         fishLureSerializer = new XmlSerializer(typeof(FishLureRoot));
@@ -521,6 +523,17 @@ public class ServerTableParser {
 
         foreach (ShadowExpeditionDrop drop in data.shadowExpeditionDrop) {
             yield return drop;
+        }
+    }
+
+    public IEnumerable<(int Id, AdditionalEffectGroup Group)> ParseAdditionalEffectGroup() {
+        string xml = Sanitizer.RemoveEmpty(xmlReader.GetString(xmlReader.GetEntry("table/Server/additionalEffectGroup.xml")));
+        var reader = XmlReader.Create(new StringReader(xml));
+        var data = additionalEffectGroupSerializer.Deserialize(reader) as AdditionalEffectGroupRoot;
+        Debug.Assert(data != null);
+
+        foreach (AdditionalEffectGroup group in data.group) {
+            yield return (group.groupId, group);
         }
     }
 
