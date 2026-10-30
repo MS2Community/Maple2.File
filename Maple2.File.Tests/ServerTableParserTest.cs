@@ -290,6 +290,26 @@ public class ServerTableParserTest {
     }
 
     [TestMethod]
+    public void TestAdditionalEffectGroup() {
+        var parser = new ServerTableParser(TestUtils.ServerReader);
+
+        Dictionary<int, AdditionalEffectGroup> groups = parser.ParseAdditionalEffectGroup()
+            .ToDictionary(entry => entry.Id, entry => entry.Group);
+        CollectionAssert.AreEquivalent(new[] { 1, 101, 999 }, groups.Keys.ToArray());
+        Assert.AreEqual(9, groups[1].value.Count);
+        Assert.AreEqual(7, groups[101].value.Count);
+        Assert.AreEqual(1, groups[999].value.Count);
+
+        // group 101, first row: <value effectId="60125001,60125002" effectLevel="1,1" />
+        CollectionAssert.AreEqual(new[] { 60125001, 60125002 }, groups[101].value[0].effectId);
+        CollectionAssert.AreEqual(new short[] { 1, 1 }, groups[101].value[0].effectLevel);
+
+        // group 1, fourth row: <value effectId="60128001" effectLevel="2" />
+        CollectionAssert.AreEqual(new[] { 60128001 }, groups[1].value[3].effectId);
+        CollectionAssert.AreEqual(new short[] { 2 }, groups[1].value[3].effectLevel);
+    }
+
+    [TestMethod]
     public void TestSpawnInteractObject() {
         var parser = new ServerTableParser(TestUtils.ServerReader);
 

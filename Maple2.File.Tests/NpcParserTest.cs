@@ -30,6 +30,22 @@ public class NpcParserTest {
     }
 
     [TestMethod]
+    public void TestNpcAdditionalEffectGroup() {
+        var locale = Locale.NA;
+        Filter.Load(TestUtils.XmlReader, locale.ToString(), "Live");
+        var parser = new NpcParser(TestUtils.XmlReader, "en");
+
+        // npc 49300001 (Destroyer), ShadowExpedition: <additionalEffect codes="92900999" levels="1" group="101,2" />
+        // npc 21000001 (Orange Mushroom): group=""
+        Dictionary<int, NpcData> npcs = parser.Parse()
+            .Where(entry => entry.Id is 49300001 or 21000001)
+            .ToDictionary(entry => entry.Id, entry => entry.Data);
+        CollectionAssert.AreEqual(new[] { 92900999 }, npcs[49300001].additionalEffect.codes);
+        CollectionAssert.AreEqual(new[] { 101, 2 }, npcs[49300001].additionalEffect.group);
+        Assert.AreEqual(0, npcs[21000001].additionalEffect.group.Length);
+    }
+
+    [TestMethod]
     public void TestNpcParserNew() {
         var locale = Locale.KR;
         Filter.Load(TestUtils.XmlReader, locale.ToString(), "Live");
