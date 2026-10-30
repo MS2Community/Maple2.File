@@ -112,6 +112,7 @@ public class TableParser {
     private readonly XmlSerializer questGroupSerializer;
     private readonly XmlSerializer darkStreamSerializer;
     private readonly XmlSerializer clubBuffSerializer;
+    private readonly XmlSerializer shadowBuffSerializer;
     private readonly XmlSerializer characterCreateSelectSerializer;
     private readonly XmlSerializer fameSerializer;
     private readonly XmlSerializer fameDefSerializer;
@@ -232,6 +233,7 @@ public class TableParser {
         questGroupSerializer = new XmlSerializer(typeof(QuestGroupRoot));
         darkStreamSerializer = new XmlSerializer(typeof(DarkStreamRoot));
         clubBuffSerializer = new XmlSerializer(typeof(ClubBuffRoot));
+        shadowBuffSerializer = new XmlSerializer(typeof(ShadowBuffRoot));
         characterCreateSelectSerializer = new XmlSerializer(typeof(CharacterCreateSelect));
         fameSerializer = new XmlSerializer(typeof(FameRoot));
         fameDefSerializer = new XmlSerializer(typeof(FameDef));
@@ -1700,6 +1702,17 @@ public class TableParser {
         Debug.Assert(data != null);
 
         foreach (ClubBuff entry in data.clubBuff) {
+            yield return (entry.id, entry);
+        }
+    }
+
+    public IEnumerable<(int Id, ShadowBuff Buff)> ParseShadowBuff() {
+        string xml = Sanitizer.RemoveSpaces(xmlReader.GetString(xmlReader.GetEntry("table/shadowbuff.xml")));
+        var reader = XmlReader.Create(new StringReader(xml));
+        var data = shadowBuffSerializer.Deserialize(reader) as ShadowBuffRoot;
+        Debug.Assert(data != null);
+
+        foreach (ShadowBuff entry in data.ShadowBuff) {
             yield return (entry.id, entry);
         }
     }

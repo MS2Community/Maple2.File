@@ -830,6 +830,27 @@ public class TableParserTest {
     }
 
     [TestMethod]
+    public void TestShadowBuff() {
+        var rows = _parser.ParseShadowBuff().ToList();
+        Assert.IsTrue(rows.Count > 0);
+        foreach ((int id, ShadowBuff buff) in rows) {
+            Assert.AreEqual(id, buff.id);
+            Assert.IsTrue(buff.ShadowBuffLevel.Count > 0, $"{id} has no levels");
+            foreach (ShadowBuffLevel level in buff.ShadowBuffLevel) {
+                Assert.IsTrue(level.level is >= 1 and <= 20, $"{id} level {level.level}");
+            }
+        }
+
+        // Soul Binder trait 211001, from table/shadowbuff.xml.
+        (_, ShadowBuff? soulBinder) = rows.FirstOrDefault(r => r.Id == 211001);
+        Assert.IsNotNull(soulBinder);
+        Assert.AreEqual(110, soulBinder.jobCode);
+        ShadowBuffLevel level2 = soulBinder.ShadowBuffLevel.Single(l => l.level == 2);
+        Assert.AreEqual(40, level2.levelUpCost);
+        Assert.AreEqual(9201100102L, level2.addifectGuids[0]);
+    }
+
+    [TestMethod]
     public void TestDungeonRewardCoupon() {
         foreach ((_, _) in _parser.ParseDungeonRewardCoupon()) {
             continue;
