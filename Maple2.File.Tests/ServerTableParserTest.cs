@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using Maple2.File.Parser;
 using Maple2.File.Parser.Enum;
+using Maple2.File.Parser.Tools;
 using Maple2.File.Parser.Xml.Table;
 using Maple2.File.Parser.Xml.Table.Server;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -307,6 +308,55 @@ public class ServerTableParserTest {
         // group 1, fourth row: <value effectId="60128001" effectLevel="2" />
         CollectionAssert.AreEqual(new[] { 60128001 }, groups[1].value[3].effectId);
         CollectionAssert.AreEqual(new short[] { 2 }, groups[1].value[3].effectLevel);
+    }
+
+    [TestMethod]
+    public void TestGlobalEquipmentRankProbability() {
+        var parser = new ServerTableParser(TestUtils.ServerReader);
+
+        Filter.Load(TestUtils.XmlReader, "NA", "Live");
+        Dictionary<(int, int, int), GlobalEquipmentRankProbability> na = parser.ParseGlobalEquipmentRankProbability()
+            .ToDictionary(row => (row.npcRank, row.npcLevel, row.assistCondition));
+        Filter.Load(TestUtils.XmlReader, "KR", "Live");
+        Dictionary<(int, int, int), GlobalEquipmentRankProbability> kr = parser.ParseGlobalEquipmentRankProbability()
+            .ToDictionary(row => (row.npcRank, row.npcLevel, row.assistCondition));
+
+        // 18 npcRanks x levels 1-99 x assistCondition 0/1. The KR and CN rows replace rows rather than add them.
+        Assert.AreEqual(18 * 99 * 2, na.Count);
+        Assert.AreEqual(18 * 99 * 2, kr.Count);
+
+        // line 41: npcRank="1" npcLevel="20" assistCondition="0" Rare="16.5" Elite="" Excellent="" Legendary=""
+        AssertRow(na[(1, 20, 0)], 16.5f, 0f, 0f, 0f);
+
+        // line 437: npcRank="4" npcLevel="20" assistCondition="0" Rare="80" Elite="20", not its KR or CN override
+        AssertRow(na[(4, 20, 0)], 80f, 20f, 0f, 0f);
+        // line 635: the same key with locale="KR": Rare="100" Elite="0" Excellent="0"
+        AssertRow(kr[(4, 20, 0)], 100f, 0f, 0f, 0f);
+        // lines 488 and 686: npcRank="4" npcLevel="45" assistCondition="1", NA then KR
+        AssertRow(na[(4, 45, 1)], 80f, 20f, 0f, 0f);
+        AssertRow(kr[(4, 45, 1)], 0f, 50f, 50f, 0f);
+        // KR overrides only npcRank 4.
+        AssertRow(kr[(1, 20, 0)], 16.5f, 0f, 0f, 0f);
+
+        // line 1013: npcRank="6" npcLevel="11" assistCondition="0" Rare="16" Elite="83.99999" Excellent="1E-05" Legendary="0"
+        AssertRow(na[(6, 11, 0)], 16f, 83.99999f, 1E-05f, 0f);
+        // lines 1051 and 1052: assistCondition 0 and 1 differ for npcRank="6" npcLevel="30"
+        AssertRow(na[(6, 30, 0)], 0f, 99.99999f, 1E-05f, 0f);
+        AssertRow(na[(6, 30, 1)], 0f, 0f, 100f, 0f);
+
+        // line 1229: npcRank="7" npcLevel="20" assistCondition="0" Rare="16.52" Elite="0.00826446280991736" Excellent="0.000208"
+        AssertRow(na[(7, 20, 0)], 16.52f, 0.00826446280991736f, 0.000208f, 0f);
+        // line 1873: npcRank="90" npcLevel="45" assistCondition="0" Rare="93.8999" Elite="6" Excellent="0.1" Legendary="0.0001"
+        AssertRow(na[(90, 45, 0)], 93.8999f, 6f, 0.1f, 0.0001f);
+        // line 3962, the last row: npcRank="920" npcLevel="99" assistCondition="1" Excellent="100"
+        AssertRow(na[(920, 99, 1)], 0f, 0f, 100f, 0f);
+    }
+
+    private static void AssertRow(GlobalEquipmentRankProbability row, float rare, float elite, float excellent, float legendary) {
+        Assert.AreEqual(rare, row.Rare);
+        Assert.AreEqual(elite, row.Elite);
+        Assert.AreEqual(excellent, row.Excellent);
+        Assert.AreEqual(legendary, row.Legendary);
     }
 
     [TestMethod]
