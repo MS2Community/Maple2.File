@@ -39,9 +39,11 @@ jobs:
     if: needs.check.outputs.should_release == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # Least privilege: only what is needed to push the tag and create the release.
+    # Least privilege: push the tag, create the release, and request the OIDC token that nuget.org
+    # Trusted Publishing exchanges for a one-hour API key.
     permissions:
       contents: write
+      id-token: write
     env:
       VERSION: ${{ needs.check.outputs.version }}
     steps:
@@ -61,8 +63,13 @@ jobs:
           dotnet-version: 8.0.x
       - name: Pack
         run: dotnet pack --configuration Release --output .
+      - name: NuGet login
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: AngeloTadeucci
       - name: Push
-        run: dotnet nuget push Maple2.File.Parser.Tadeucci.${VERSION}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_TOKEN }}
+        run: dotnet nuget push Maple2.File.Parser.Tadeucci.${VERSION}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ steps.login.outputs.NUGET_API_KEY }}
       - name: Check Available NuGet Package
         uses: BMTLab/nuget-package-check-action@v1.5.3
         with:
