@@ -320,10 +320,14 @@ public class ServerTableParserTest {
         Filter.Load(TestUtils.XmlReader, "KR", "Live");
         Dictionary<(int, int, int), GlobalEquipmentRankProbability> kr = parser.ParseGlobalEquipmentRankProbability()
             .ToDictionary(row => (row.npcRank, row.npcLevel, row.assistCondition));
+        Filter.Load(TestUtils.XmlReader, "CN", "Live");
+        Dictionary<(int, int, int), GlobalEquipmentRankProbability> cn = parser.ParseGlobalEquipmentRankProbability()
+            .ToDictionary(row => (row.npcRank, row.npcLevel, row.assistCondition));
 
         // 18 npcRanks x levels 1-99 x assistCondition 0/1. The KR and CN rows replace rows rather than add them.
         Assert.AreEqual(18 * 99 * 2, na.Count);
         Assert.AreEqual(18 * 99 * 2, kr.Count);
+        Assert.AreEqual(18 * 99 * 2, cn.Count);
 
         // line 41: npcRank="1" npcLevel="20" assistCondition="0" Rare="16.5" Elite="" Excellent="" Legendary=""
         AssertRow(na[(1, 20, 0)], 16.5f, 0f, 0f, 0f);
@@ -332,6 +336,8 @@ public class ServerTableParserTest {
         AssertRow(na[(4, 20, 0)], 80f, 20f, 0f, 0f);
         // line 635: the same key with locale="KR": Rare="100" Elite="0" Excellent="0"
         AssertRow(kr[(4, 20, 0)], 100f, 0f, 0f, 0f);
+        // line 833: the same key with locale="CN": Rare="16.5"
+        AssertRow(cn[(4, 20, 0)], 16.5f, 0f, 0f, 0f);
         // lines 488 and 686: npcRank="4" npcLevel="45" assistCondition="1", NA then KR
         AssertRow(na[(4, 45, 1)], 80f, 20f, 0f, 0f);
         AssertRow(kr[(4, 45, 1)], 0f, 50f, 50f, 0f);
