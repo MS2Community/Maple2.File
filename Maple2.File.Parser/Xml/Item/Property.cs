@@ -5,7 +5,9 @@ namespace Maple2.File.Parser.Xml.Item;
 
 public partial class Property {
     [XmlAttribute] public bool skin;
-    [XmlAttribute] public short rank = 1;
+    // 0 when the item names no rank, as the client's CItemData starts it. A drop then rolls the rank from
+    // globalEquipmentRankProbability.xml, so 0 must stay apart from an explicit rank="1".
+    [XmlAttribute] public short rank;
     [XmlAttribute] public int skinType;
     [XmlAttribute] public int slotMax = 1; // if > 99999, set to 99999
     [XmlAttribute] public int type;

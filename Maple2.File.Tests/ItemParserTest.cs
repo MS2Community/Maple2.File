@@ -32,6 +32,23 @@ public class ItemParserTest {
     }
 
     [TestMethod]
+    public void TestItemRank() {
+        Filter.Load(TestUtils.XmlReader, Locale.NA.ToString(), "Live");
+        var parser = new ItemParser(TestUtils.XmlReader, "en");
+
+        Dictionary<int, short> ranks = parser.Parse()
+            .Where(entry => entry.Id is 11300106 or 13200172 or 11300001 or 11300003)
+            .ToDictionary(entry => entry.Id, entry => entry.Data.property.rank);
+
+        // 11300106 Apprentice Hat names no rank. 13200172's NA environment has <property rank="1">,
+        // 11300001 <property rank="2"> and 11300003 <property rank="3">.
+        Assert.AreEqual(0, ranks[11300106]);
+        Assert.AreEqual(1, ranks[13200172]);
+        Assert.AreEqual(2, ranks[11300001]);
+        Assert.AreEqual(3, ranks[11300003]);
+    }
+
+    [TestMethod]
     public void TestItemParserNew() {
         var locale = Locale.KR;
         Filter.Load(TestUtils.XmlReader, locale.ToString(), "Live");

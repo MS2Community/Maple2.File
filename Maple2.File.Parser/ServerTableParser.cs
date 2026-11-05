@@ -45,6 +45,7 @@ public class ServerTableParser {
     private readonly XmlSerializer groupSpawnSerializer;
     private readonly XmlSerializer shadowExpeditionDropSerializer;
     private readonly XmlSerializer additionalEffectGroupSerializer;
+    private readonly XmlSerializer globalEquipmentRankProbabilitySerializer;
     private readonly XmlSerializer fishSerializer;
     private readonly XmlSerializer fishingSpotSerializer;
     private readonly XmlSerializer fishLureSerializer;
@@ -95,6 +96,7 @@ public class ServerTableParser {
         groupSpawnSerializer = new XmlSerializer(typeof(GroupSpawnRoot));
         shadowExpeditionDropSerializer = new XmlSerializer(typeof(ShadowExpeditionDropRoot));
         additionalEffectGroupSerializer = new XmlSerializer(typeof(AdditionalEffectGroupRoot));
+        globalEquipmentRankProbabilitySerializer = new XmlSerializer(typeof(GlobalEquipmentRankProbabilityRoot));
         fishSerializer = new XmlSerializer(typeof(FishRoot));
         fishingSpotSerializer = new XmlSerializer(typeof(FishingSpotRoot));
         fishLureSerializer = new XmlSerializer(typeof(FishLureRoot));
@@ -534,6 +536,17 @@ public class ServerTableParser {
 
         foreach (AdditionalEffectGroup group in data.group) {
             yield return (group.groupId, group);
+        }
+    }
+
+    public IEnumerable<GlobalEquipmentRankProbability> ParseGlobalEquipmentRankProbability() {
+        string xml = Sanitizer.RemoveEmpty(xmlReader.GetString(xmlReader.GetEntry("table/Server/globalEquipmentRankProbability.xml")));
+        var reader = XmlReader.Create(new StringReader(xml));
+        var data = globalEquipmentRankProbabilitySerializer.Deserialize(reader) as GlobalEquipmentRankProbabilityRoot;
+        Debug.Assert(data != null);
+
+        foreach (GlobalEquipmentRankProbability row in data.DropProbability) {
+            yield return row;
         }
     }
 
