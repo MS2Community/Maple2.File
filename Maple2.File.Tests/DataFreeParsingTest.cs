@@ -66,4 +66,37 @@ public class DataFreeParsingTest {
             Assert.AreEqual("0.5,1.25,-3", property._values);
         });
     }
+
+    // Values from the converted TMS2 data: Thief 10700191, Assassin 10800041, Priest 10400251, Wizard 10300279.
+    [TestMethod]
+    public void TestBalanceAdditionalEffectFields() {
+        const string xml = """
+            <ms2>
+              <level>
+                <BasicProperty level="1" />
+                <StatusProperty>
+                  <SpecialAbility aevprate="0.03" cap_ignore_limit_extrarate="0.2" reduce_do_heal_hprate="0.9" />
+                </StatusProperty>
+                <ModifySkillCooldownProperty skillIDs="10300271" values="-0.5" />
+              </level>
+            </ms2>
+            """;
+        var serializer = new System.Xml.Serialization.XmlSerializer(typeof(AdditionalEffectLevelData));
+        var root = (AdditionalEffectLevelData) serializer.Deserialize(new StringReader(xml))!;
+        AdditionalEffectData data = root.level.Single();
+
+        Assert.AreEqual(0.03f, data.StatusProperty.SpecialAbility.aevprate);
+        Assert.AreEqual(0.2f, data.StatusProperty.SpecialAbility.cap_ignore_limit_extrarate);
+        Assert.AreEqual(0.9f, data.StatusProperty.SpecialAbility.reduce_do_heal_hprate);
+        CollectionAssert.AreEqual(new[] { 10300271 }, data.ModifySkillCooldownProperty.skillIDs);
+        CollectionAssert.AreEqual(new[] { -0.5f }, data.ModifySkillCooldownProperty.values);
+    }
+
+    // Wizard 10300222's converted conditionSkill target.
+    [TestMethod]
+    public void TestHasNotBuffOwner() {
+        var target = new Maple2.File.Parser.Xml.Skill.SubConditionTarget { _hasNotBuffID = "10300227", _hasNotBuffOwner = "1" };
+        CollectionAssert.AreEqual(new[] { 10300227 }, target.hasNotBuffID);
+        CollectionAssert.AreEqual(new[] { true }, target.hasNotBuffOwner);
+    }
 }
