@@ -102,4 +102,41 @@ public class DataFreeParsingTest {
         CollectionAssert.AreEqual(new[] { 10300227 }, target.hasNotBuffID);
         CollectionAssert.AreEqual(new[] { true }, target.hasNotBuffOwner);
     }
+    // TMS2 table/stance.xml, punch row, verbatim.
+    [TestMethod]
+    public void TestStance() {
+        const string xml = """
+            <ms2>
+              <v stanceAdditionalID="11000171" hitCountAdditinoalID="11000172" damageSkillIDs="11000171,11000192,11000182,11000183,11000316,11000321,11000322,11000323" finishStanceSkillIDs="11000144,11000145,11000146">
+                <level level="1" hitCount="0" multiplyDamageRate="0" maxAccDamageRate="0" />
+                <level level="2" hitCount="20" multiplyDamageRate="300" maxAccDamageRate="50000" />
+                <level level="3" hitCount="35" multiplyDamageRate="500" maxAccDamageRate="100000" />
+              </v>
+            </ms2>
+            """;
+        var serializer = new System.Xml.Serialization.XmlSerializer(typeof(Maple2.File.Parser.Xml.Table.StanceRoot));
+        var root = (Maple2.File.Parser.Xml.Table.StanceRoot) serializer.Deserialize(new StringReader(xml))!;
+        Maple2.File.Parser.Xml.Table.Stance stance = root.v.Single();
+
+        Assert.AreEqual(11000171, stance.stanceAdditionalID);
+        Assert.AreEqual(11000172, stance.hitCountAdditinoalID);
+        CollectionAssert.AreEqual(new[] { 11000171, 11000192, 11000182, 11000183, 11000316, 11000321, 11000322, 11000323 }, stance.damageSkillIDs);
+        CollectionAssert.AreEqual(new[] { 11000144, 11000145, 11000146 }, stance.finishStanceSkillIDs);
+        Assert.AreEqual(3, stance.level.Count);
+        Assert.AreEqual(2, stance.level[1].level);
+        Assert.AreEqual(20, stance.level[1].hitCount);
+        Assert.AreEqual(300, stance.level[1].multiplyDamageRate);
+        Assert.AreEqual(100000, stance.level[2].maxAccDamageRate);
+    }
+
+    // Shockwave Punch 11000171 level 1 in TMS2 SkillData/110.xml.
+    [TestMethod]
+    public void TestSkillLevelStanceDamageRate() {
+        WithCulture(CommaDecimalCulture, () => {
+            const string xml = """<ms2><level value="1" stanceDamageRate="4.66" /></ms2>""";
+            var serializer = new System.Xml.Serialization.XmlSerializer(typeof(Maple2.File.Parser.Xml.Skill.SkillData));
+            var data = (Maple2.File.Parser.Xml.Skill.SkillData) serializer.Deserialize(new StringReader(xml))!;
+            Assert.AreEqual(4.66f, data.level.Single().stanceDamageRate);
+        });
+    }
 }

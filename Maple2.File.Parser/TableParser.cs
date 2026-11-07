@@ -3,6 +3,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using M2dXmlGenerator;
 using Maple2.File.IO;
+using Maple2.File.IO.Crypto.Common;
 using Maple2.File.Parser.Enum;
 using Maple2.File.Parser.Tools;
 using Maple2.File.Parser.Xml.String;
@@ -113,6 +114,7 @@ public class TableParser {
     private readonly XmlSerializer darkStreamSerializer;
     private readonly XmlSerializer clubBuffSerializer;
     private readonly XmlSerializer shadowBuffSerializer;
+    private readonly XmlSerializer stanceSerializer;
     private readonly XmlSerializer characterCreateSelectSerializer;
     private readonly XmlSerializer fameSerializer;
     private readonly XmlSerializer fameDefSerializer;
@@ -234,6 +236,7 @@ public class TableParser {
         darkStreamSerializer = new XmlSerializer(typeof(DarkStreamRoot));
         clubBuffSerializer = new XmlSerializer(typeof(ClubBuffRoot));
         shadowBuffSerializer = new XmlSerializer(typeof(ShadowBuffRoot));
+        stanceSerializer = new XmlSerializer(typeof(StanceRoot));
         characterCreateSelectSerializer = new XmlSerializer(typeof(CharacterCreateSelect));
         fameSerializer = new XmlSerializer(typeof(FameRoot));
         fameDefSerializer = new XmlSerializer(typeof(FameDef));
@@ -1714,6 +1717,23 @@ public class TableParser {
 
         foreach (ShadowBuff entry in data.ShadowBuff) {
             yield return (entry.id, entry);
+        }
+    }
+
+    // Absent from GMS2 archives, which yield nothing.
+    public IEnumerable<(int StanceId, Stance Stance)> ParseStance() {
+        PackFileEntry? entry = xmlReader.Files.FirstOrDefault(file => file.Name.EndsWith("table/stance.xml"));
+        if (entry == null) {
+            yield break;
+        }
+
+        string xml = Sanitizer.RemoveSpaces(xmlReader.GetString(entry));
+        var reader = XmlReader.Create(new StringReader(xml));
+        var data = stanceSerializer.Deserialize(reader) as StanceRoot;
+        Debug.Assert(data != null);
+
+        foreach (Stance stance in data.v) {
+            yield return (stance.stanceAdditionalID, stance);
         }
     }
 

@@ -16,6 +16,8 @@ public partial class SkillData : IFeatureLocale {
 
 public partial class SkillLevelData : IFeatureLocale {
     [XmlAttribute] public short value;
+    // KMS2/TMS2: the rate one hit of this skill adds to its stance (table/stance.xml damageSkillIDs).
+    [XmlAttribute] public float stanceDamageRate;
 
     [XmlElement] public BeginCondition beginCondition;
     [XmlElement] public ChangeSkill changeSkill;
