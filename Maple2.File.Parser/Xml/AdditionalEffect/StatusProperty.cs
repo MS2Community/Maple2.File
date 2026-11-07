@@ -604,6 +604,9 @@ public class SpecialAbility {
     [XmlAttribute] public float aevprate;
     [XmlAttribute] public float cap_ignore_limit_extrarate;
     [XmlAttribute] public float reduce_do_heal_hprate;
+    // Crit rate and crit damage points added past the client clamp, in capvalue/cadvalue units.
+    [XmlAttribute] public long cap_ignore_limitvalue;
+    [XmlAttribute] public long cad_ignore_limitvalue;
 
     public float Value(byte i) {
         return i switch {

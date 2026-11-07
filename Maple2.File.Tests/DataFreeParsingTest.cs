@@ -67,7 +67,8 @@ public class DataFreeParsingTest {
         });
     }
 
-    // Values from the converted TMS2 data: Thief 10700191, Assassin 10800041, Priest 10400251, Wizard 10300279.
+    // Values from the converted TMS2 data: Thief 10700191 and 10700181, Assassin 10800041, Priest 10400251 and
+    // 10400243, Wizard 10300279.
     [TestMethod]
     public void TestBalanceAdditionalEffectFields() {
         const string xml = """
@@ -75,7 +76,7 @@ public class DataFreeParsingTest {
               <level>
                 <BasicProperty level="1" />
                 <StatusProperty>
-                  <SpecialAbility aevprate="0.03" cap_ignore_limit_extrarate="0.2" reduce_do_heal_hprate="0.9" />
+                  <SpecialAbility aevprate="0.03" cap_ignore_limit_extrarate="0.2" reduce_do_heal_hprate="0.9" cap_ignore_limitvalue="20" cad_ignore_limitvalue="200" />
                 </StatusProperty>
                 <ModifySkillCooldownProperty skillIDs="10300271" values="-0.5" />
               </level>
@@ -88,6 +89,8 @@ public class DataFreeParsingTest {
         Assert.AreEqual(0.03f, data.StatusProperty.SpecialAbility.aevprate);
         Assert.AreEqual(0.2f, data.StatusProperty.SpecialAbility.cap_ignore_limit_extrarate);
         Assert.AreEqual(0.9f, data.StatusProperty.SpecialAbility.reduce_do_heal_hprate);
+        Assert.AreEqual(20, data.StatusProperty.SpecialAbility.cap_ignore_limitvalue);
+        Assert.AreEqual(200, data.StatusProperty.SpecialAbility.cad_ignore_limitvalue);
         CollectionAssert.AreEqual(new[] { 10300271 }, data.ModifySkillCooldownProperty.skillIDs);
         CollectionAssert.AreEqual(new[] { -0.5f }, data.ModifySkillCooldownProperty.values);
     }
