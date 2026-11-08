@@ -139,4 +139,44 @@ public class DataFreeParsingTest {
             Assert.AreEqual(4.66f, data.level.Single().stanceDamageRate);
         });
     }
+
+    // Wizard 10300252 (Little Meteor mark) and HeavyGunner 10600280 in TMS2 Additional/103.xml and 106.xml,
+    // as the balance converter writes them in the old format.
+    [TestMethod]
+    public void TestSpreadAndRemoveRechargingCount() {
+        const string xml = """
+            <ms2>
+              <level>
+                <BasicProperty level="1" />
+                <SpreadProperty type="1" count="1">
+                  <rangeProperty rangeType="cylinder" distance="500" height="300" applyTarget="1" />
+                </SpreadProperty>
+                <RemoveRechargingCountProperty skillID="10600181" count="2" />
+              </level>
+            </ms2>
+            """;
+        var serializer = new System.Xml.Serialization.XmlSerializer(typeof(AdditionalEffectLevelData));
+        var root = (AdditionalEffectLevelData) serializer.Deserialize(new StringReader(xml))!;
+        AdditionalEffectData data = root.level.Single();
+
+        Assert.AreEqual(1, data.SpreadProperty.type);
+        Assert.AreEqual(1, data.SpreadProperty.count);
+        Assert.AreEqual("cylinder", data.SpreadProperty.rangeProperty.rangeType);
+        Assert.AreEqual(500f, data.SpreadProperty.rangeProperty.distance);
+        Assert.AreEqual(300f, data.SpreadProperty.rangeProperty.height);
+        Assert.AreEqual(1, data.SpreadProperty.rangeProperty.applyTarget);
+        Assert.AreEqual(10600181, data.RemoveRechargingCountProperty.skillID);
+        Assert.AreEqual(2, data.RemoveRechargingCountProperty.count);
+    }
+
+    [TestMethod]
+    public void TestSpreadAndRemoveRechargingCountAbsent() {
+        const string xml = """<ms2><level><BasicProperty level="1" /></level></ms2>""";
+        var serializer = new System.Xml.Serialization.XmlSerializer(typeof(AdditionalEffectLevelData));
+        var root = (AdditionalEffectLevelData) serializer.Deserialize(new StringReader(xml))!;
+        AdditionalEffectData data = root.level.Single();
+
+        Assert.IsNull(data.SpreadProperty);
+        Assert.IsNull(data.RemoveRechargingCountProperty);
+    }
 }

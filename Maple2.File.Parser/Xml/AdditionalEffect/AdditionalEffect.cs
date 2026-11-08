@@ -37,6 +37,9 @@ public partial class AdditionalEffectData : IFeatureLocale {
     [XmlElement] public RideeProperty RideeProperty;
     // KMS2/TMS2 only, the new format's ModifySkillCooldown under the XxxProperty naming. Absent in GMS2 data.
     [XmlElement] public ModifySkillCooldown ModifySkillCooldownProperty;
+    // KMS2/TMS2 only, absent in GMS2 data. KMS2's own legacy export names the first SpreadProperty.
+    [XmlElement] public Spread SpreadProperty;
+    [XmlElement] public RemoveRechargingCount RemoveRechargingCountProperty;
 
     [XmlElement] public List<TriggerSkill> splashSkill;
     [XmlElement] public List<TriggerSkill> conditionSkill;
