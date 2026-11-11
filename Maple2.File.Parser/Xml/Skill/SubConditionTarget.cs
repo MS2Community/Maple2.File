@@ -15,6 +15,7 @@ public partial class SubConditionTarget {
     [XmlAttribute] public short hasSkillLevel; // 0,1,2,3,4,5
     [XmlAttribute] public int ignoreOwnerEvent; // 0,10500292
     [M2dArray] public int[] hasNotBuffID = Array.Empty<int>();
+    [M2dArray] public bool[] hasNotBuffOwner = Array.Empty<bool>(); // KMS2/TMS2 only
     [M2dArray] public int[] eventSkillID = Array.Empty<int>();
     [M2dArray] public int[] eventIgnoreSkillID = Array.Empty<int>();
     [M2dArray] public int[] eventEffectID = Array.Empty<int>();

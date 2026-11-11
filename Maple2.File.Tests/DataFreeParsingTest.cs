@@ -66,4 +66,117 @@ public class DataFreeParsingTest {
             Assert.AreEqual("0.5,1.25,-3", property._values);
         });
     }
+
+    // Values from the converted TMS2 data: Thief 10700191 and 10700181, Assassin 10800041, Priest 10400251 and
+    // 10400243, Wizard 10300279.
+    [TestMethod]
+    public void TestBalanceAdditionalEffectFields() {
+        const string xml = """
+            <ms2>
+              <level>
+                <BasicProperty level="1" />
+                <StatusProperty>
+                  <SpecialAbility aevprate="0.03" cap_ignore_limit_extrarate="0.2" reduce_do_heal_hprate="0.9" cap_ignore_limitvalue="20" cad_ignore_limitvalue="200" />
+                </StatusProperty>
+                <ModifySkillCooldownProperty skillIDs="10300271" values="-0.5" />
+              </level>
+            </ms2>
+            """;
+        var serializer = new System.Xml.Serialization.XmlSerializer(typeof(AdditionalEffectLevelData));
+        var root = (AdditionalEffectLevelData) serializer.Deserialize(new StringReader(xml))!;
+        AdditionalEffectData data = root.level.Single();
+
+        Assert.AreEqual(0.03f, data.StatusProperty.SpecialAbility.aevprate);
+        Assert.AreEqual(0.2f, data.StatusProperty.SpecialAbility.cap_ignore_limit_extrarate);
+        Assert.AreEqual(0.9f, data.StatusProperty.SpecialAbility.reduce_do_heal_hprate);
+        Assert.AreEqual(20, data.StatusProperty.SpecialAbility.cap_ignore_limitvalue);
+        Assert.AreEqual(200, data.StatusProperty.SpecialAbility.cad_ignore_limitvalue);
+        CollectionAssert.AreEqual(new[] { 10300271 }, data.ModifySkillCooldownProperty.skillIDs);
+        CollectionAssert.AreEqual(new[] { -0.5f }, data.ModifySkillCooldownProperty.values);
+    }
+
+    // Wizard 10300222's converted conditionSkill target.
+    [TestMethod]
+    public void TestHasNotBuffOwner() {
+        var target = new Maple2.File.Parser.Xml.Skill.SubConditionTarget { _hasNotBuffID = "10300227", _hasNotBuffOwner = "1" };
+        CollectionAssert.AreEqual(new[] { 10300227 }, target.hasNotBuffID);
+        CollectionAssert.AreEqual(new[] { true }, target.hasNotBuffOwner);
+    }
+    // TMS2 table/stance.xml, punch row, verbatim.
+    [TestMethod]
+    public void TestStance() {
+        const string xml = """
+            <ms2>
+              <v stanceAdditionalID="11000171" hitCountAdditinoalID="11000172" damageSkillIDs="11000171,11000192,11000182,11000183,11000316,11000321,11000322,11000323" finishStanceSkillIDs="11000144,11000145,11000146">
+                <level level="1" hitCount="0" multiplyDamageRate="0" maxAccDamageRate="0" />
+                <level level="2" hitCount="20" multiplyDamageRate="300" maxAccDamageRate="50000" />
+                <level level="3" hitCount="35" multiplyDamageRate="500" maxAccDamageRate="100000" />
+              </v>
+            </ms2>
+            """;
+        var serializer = new System.Xml.Serialization.XmlSerializer(typeof(Maple2.File.Parser.Xml.Table.StanceRoot));
+        var root = (Maple2.File.Parser.Xml.Table.StanceRoot) serializer.Deserialize(new StringReader(xml))!;
+        Maple2.File.Parser.Xml.Table.Stance stance = root.v.Single();
+
+        Assert.AreEqual(11000171, stance.stanceAdditionalID);
+        Assert.AreEqual(11000172, stance.hitCountAdditinoalID);
+        CollectionAssert.AreEqual(new[] { 11000171, 11000192, 11000182, 11000183, 11000316, 11000321, 11000322, 11000323 }, stance.damageSkillIDs);
+        CollectionAssert.AreEqual(new[] { 11000144, 11000145, 11000146 }, stance.finishStanceSkillIDs);
+        Assert.AreEqual(3, stance.level.Count);
+        Assert.AreEqual(2, stance.level[1].level);
+        Assert.AreEqual(20, stance.level[1].hitCount);
+        Assert.AreEqual(300, stance.level[1].multiplyDamageRate);
+        Assert.AreEqual(100000, stance.level[2].maxAccDamageRate);
+    }
+
+    // Shockwave Punch 11000171 level 1 in TMS2 SkillData/110.xml.
+    [TestMethod]
+    public void TestSkillLevelStanceDamageRate() {
+        WithCulture(CommaDecimalCulture, () => {
+            const string xml = """<ms2><level value="1" stanceDamageRate="4.66" /></ms2>""";
+            var serializer = new System.Xml.Serialization.XmlSerializer(typeof(Maple2.File.Parser.Xml.Skill.SkillData));
+            var data = (Maple2.File.Parser.Xml.Skill.SkillData) serializer.Deserialize(new StringReader(xml))!;
+            Assert.AreEqual(4.66f, data.level.Single().stanceDamageRate);
+        });
+    }
+
+    // Wizard 10300252 (Little Meteor mark) and HeavyGunner 10600280 in TMS2 Additional/103.xml and 106.xml,
+    // as the balance converter writes them in the old format.
+    [TestMethod]
+    public void TestSpreadAndRemoveRechargingCount() {
+        const string xml = """
+            <ms2>
+              <level>
+                <BasicProperty level="1" />
+                <SpreadProperty type="1" count="1">
+                  <rangeProperty rangeType="cylinder" distance="500" height="300" applyTarget="1" />
+                </SpreadProperty>
+                <RemoveRechargingCountProperty skillID="10600181" count="2" />
+              </level>
+            </ms2>
+            """;
+        var serializer = new System.Xml.Serialization.XmlSerializer(typeof(AdditionalEffectLevelData));
+        var root = (AdditionalEffectLevelData) serializer.Deserialize(new StringReader(xml))!;
+        AdditionalEffectData data = root.level.Single();
+
+        Assert.AreEqual(1, data.SpreadProperty.type);
+        Assert.AreEqual(1, data.SpreadProperty.count);
+        Assert.AreEqual("cylinder", data.SpreadProperty.rangeProperty.rangeType);
+        Assert.AreEqual(500f, data.SpreadProperty.rangeProperty.distance);
+        Assert.AreEqual(300f, data.SpreadProperty.rangeProperty.height);
+        Assert.AreEqual(1, data.SpreadProperty.rangeProperty.applyTarget);
+        Assert.AreEqual(10600181, data.RemoveRechargingCountProperty.skillID);
+        Assert.AreEqual(2, data.RemoveRechargingCountProperty.count);
+    }
+
+    [TestMethod]
+    public void TestSpreadAndRemoveRechargingCountAbsent() {
+        const string xml = """<ms2><level><BasicProperty level="1" /></level></ms2>""";
+        var serializer = new System.Xml.Serialization.XmlSerializer(typeof(AdditionalEffectLevelData));
+        var root = (AdditionalEffectLevelData) serializer.Deserialize(new StringReader(xml))!;
+        AdditionalEffectData data = root.level.Single();
+
+        Assert.IsNull(data.SpreadProperty);
+        Assert.IsNull(data.RemoveRechargingCountProperty);
+    }
 }

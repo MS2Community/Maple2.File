@@ -600,6 +600,14 @@ public class SpecialAbility {
     [XmlAttribute] public float offensive_magicaldamagerate;
     [XmlAttribute] public float reduce_gameitem_socket_unlock_feerate;
 
+    // KMS2/TMS2 class-balance stats. No GMS2 SA slot, so Value/Rate(i) do not index them.
+    [XmlAttribute] public float aevprate;
+    [XmlAttribute] public float cap_ignore_limit_extrarate;
+    [XmlAttribute] public float reduce_do_heal_hprate;
+    // Crit rate and crit damage points added past the client clamp, in capvalue/cadvalue units.
+    [XmlAttribute] public long cap_ignore_limitvalue;
+    [XmlAttribute] public long cad_ignore_limitvalue;
+
     public float Value(byte i) {
         return i switch {
             0 => segvalue,
