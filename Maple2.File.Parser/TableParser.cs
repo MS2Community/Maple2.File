@@ -110,6 +110,7 @@ public class TableParser {
     private readonly XmlSerializer statStringSerializer;
     private readonly XmlSerializer autoActionPricePackageSerializer;
     private readonly XmlSerializer pvpRankingDuelModeSerializer;
+    private readonly XmlSerializer mapContinentSerializer;
     private readonly XmlSerializer questGroupSerializer;
     private readonly XmlSerializer darkStreamSerializer;
     private readonly XmlSerializer clubBuffSerializer;
@@ -232,6 +233,7 @@ public class TableParser {
         statStringSerializer = new XmlSerializer(typeof(StatStringRoot));
         autoActionPricePackageSerializer = new XmlSerializer(typeof(AutoActionPricePackageRoot));
         pvpRankingDuelModeSerializer = new XmlSerializer(typeof(PvpRankingDuelModeRoot));
+        mapContinentSerializer = new XmlSerializer(typeof(MapContinentRoot));
         questGroupSerializer = new XmlSerializer(typeof(QuestGroupRoot));
         darkStreamSerializer = new XmlSerializer(typeof(DarkStreamRoot));
         clubBuffSerializer = new XmlSerializer(typeof(ClubBuffRoot));
@@ -1674,6 +1676,16 @@ public class TableParser {
 
         foreach (PvpRankingDuelMode entry in data.gradeInfo) {
             yield return (entry.grade, entry);
+        }
+    }
+
+    public IEnumerable<(int Id, MapContinent Data)> ParseMapContinent() {
+        XmlReader reader = xmlReader.GetXmlReader(xmlReader.GetEntry("table/mapcontinenttable.xml"));
+        var data = mapContinentSerializer.Deserialize(reader) as MapContinentRoot;
+        Debug.Assert(data != null);
+
+        foreach (MapContinent entry in data.continent) {
+            yield return (entry.id, entry);
         }
     }
 
