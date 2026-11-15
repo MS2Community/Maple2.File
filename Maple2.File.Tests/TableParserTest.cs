@@ -793,6 +793,14 @@ public class TableParserTest {
     }
 
     [TestMethod]
+    public void TestMapContinent() {
+        var continents = _parser.ParseMapContinent().ToDictionary(entry => entry.Id, entry => entry.Data);
+        Assert.AreEqual(1, continents[202].shadowContinent);
+        Assert.AreEqual(102, continents[202].representWorldmapContinent);
+        Assert.AreEqual(0, continents[102].shadowContinent);
+    }
+
+    [TestMethod]
     public void TestQuestGroup() {
         foreach ((_, _) in _parser.ParseQuestGroup()) {
             continue;
