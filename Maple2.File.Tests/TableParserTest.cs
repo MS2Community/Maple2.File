@@ -210,6 +210,24 @@ public class TableParserTest {
     }
 
     [TestMethod]
+    public void TestGuildRaid() {
+        var raids = _parser.ParseGuildRaid().ToDictionary(entry => entry.DungeonRoomId, entry => entry.Raid);
+        CollectionAssert.AreEquivalent(new[] { 26001001, 26002001, 26003001, 26004001, 26005001 }, raids.Keys.ToArray());
+
+        Assert.AreEqual(1000, raids[26001001].clearRaidPoint);
+        Assert.AreEqual(1f, raids[26001001].clearGuildExp);
+        Assert.AreEqual(1f, raids[26001001].clearGuildFund);
+        Assert.AreEqual("GuildRaid01", raids[26001001].Feature);
+
+        Assert.AreEqual(1000, raids[26004001].clearRaidPoint);
+        Assert.AreEqual(1.3f, raids[26004001].clearGuildExp);
+        Assert.AreEqual(1.75f, raids[26004001].clearGuildFund);
+
+        Assert.AreEqual(1.4f, raids[26005001].clearGuildExp);
+        Assert.AreEqual(2f, raids[26005001].clearGuildFund);
+    }
+
+    [TestMethod]
     public void TestParseInstrumentCategoryInfo() {
         foreach ((_, _) in _parser.ParseInstrumentCategoryInfo()) {
             continue;

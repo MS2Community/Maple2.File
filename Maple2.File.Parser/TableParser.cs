@@ -38,6 +38,7 @@ public class TableParser {
     private readonly XmlSerializer guildNpcSerializer;
     private readonly XmlSerializer guildPropertySerializer;
     private readonly XmlSerializer guildQuestRewardFactorSerializer;
+    private readonly XmlSerializer guildRaidSerializer;
     private readonly XmlSerializer instrumentCategoryInfoSerializer;
     private readonly XmlSerializer instrumentInfoSerializer;
     private readonly XmlSerializer interactObjectSerializer;
@@ -161,6 +162,7 @@ public class TableParser {
         guildNpcSerializer = new XmlSerializer(typeof(GuildNpcRoot));
         guildPropertySerializer = new XmlSerializer(typeof(GuildPropertyRoot));
         guildQuestRewardFactorSerializer = new XmlSerializer(typeof(GuildQuestRewardFactorRoot));
+        guildRaidSerializer = new XmlSerializer(typeof(GuildRaidRoot));
         instrumentCategoryInfoSerializer = new XmlSerializer(typeof(InstrumentCategoryInfoRoot));
         instrumentInfoSerializer = new XmlSerializer(typeof(InstrumentInfoRoot));
         interactObjectSerializer = new XmlSerializer(typeof(InteractObjectRoot));
@@ -545,6 +547,16 @@ public class TableParser {
 
         foreach (GuildQuestRewardFactor factor in data.guildNpc) {
             yield return (factor.level, factor);
+        }
+    }
+
+    public IEnumerable<(int DungeonRoomId, GuildRaid Raid)> ParseGuildRaid() {
+        XmlReader reader = xmlReader.GetXmlReader(xmlReader.GetEntry("table/guildraid.xml"));
+        var data = guildRaidSerializer.Deserialize(reader) as GuildRaidRoot;
+        Debug.Assert(data != null);
+
+        foreach (GuildRaid raid in data.guildRaid) {
+            yield return (raid.dungeonRoomID, raid);
         }
     }
 
