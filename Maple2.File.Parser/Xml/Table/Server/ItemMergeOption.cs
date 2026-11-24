@@ -16,6 +16,11 @@ public partial class MergeOption {
 
     public partial class Slot {
         [XmlAttribute] public int part = 1;
+        // The client table nests slots under <mergeStep step="N">; the server file has no such
+        // level, so a slot names its step here. Retail rows carry none and are all step 1.
+        [XmlAttribute] public int step = 1;
+        // Some tables (the 370300xx/370400xx crystals) list their slots here instead of in part.
+        [M2dArray] public int[] partLimit = Array.Empty<int>();
         [XmlAttribute] public long consumeMeso;
         [M2dArray] public string[] itemMaterial1 = Array.Empty<string>();
         [M2dArray] public string[] itemMaterial2 = Array.Empty<string>();
