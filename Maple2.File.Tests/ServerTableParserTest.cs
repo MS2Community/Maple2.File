@@ -481,9 +481,11 @@ public class ServerTableParserTest {
     public void TestItemMergeOption() {
         var parser = new ServerTableParser(TestUtils.ServerReader);
 
-        foreach ((_, _) in parser.ParseItemMergeOption()) {
-            continue;
-        }
+        var options = parser.ParseItemMergeOption().ToDictionary(entry => entry.Id, entry => entry.MergeOption);
+
+        // 37030001 addresses its slots by partLimit="13,14,15,16,17" and carries no part.
+        var chaos = options[37030001].slot.Single();
+        CollectionAssert.AreEqual(new[] { 13, 14, 15, 16, 17 }, chaos.partLimit);
     }
 
     [TestMethod]
