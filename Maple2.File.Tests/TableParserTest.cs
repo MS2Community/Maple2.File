@@ -259,6 +259,36 @@ public class TableParserTest {
     }
 
     [TestMethod]
+    public void TestParseItemEnchantTransform() {
+        List<ItemEnchantTransform> rows = _parser.ParseItemEnchantTransform().ToList();
+
+        // Oracle: the raw XML holds 252 rows with no locale and 84 with locale="NA", the rest are KR, CN and JP.
+        Assert.AreEqual(336, rows.Count);
+        Assert.IsTrue(rows.All(row => row.Locale is "" or "NA"));
+
+        // A locale="NA" row whose inputItemId puts a space after each comma.
+        ItemEnchantTransform na = rows.Single(row => row.output1Id == 31001658);
+        Assert.AreEqual(5, na.inputRank);
+        Assert.AreEqual(50, na.inputLimitLevel);
+        Assert.AreEqual(10, na.inputEnchantLevel);
+        CollectionAssert.AreEqual(new[] { 13 }, na.inputSlot);
+        Assert.AreEqual(33, na.inputItemId.Length);
+        Assert.AreEqual(11350684, na.inputItemId[0]);
+        Assert.AreEqual(11350685, na.inputItemId[1]);
+        Assert.AreEqual(11350755, na.inputItemId[^1]);
+        Assert.AreEqual(0L, na.needMeso);
+        Assert.AreEqual(4, na.output1Rank);
+        Assert.AreEqual(1, na.output1Count);
+        Assert.AreEqual(0, na.output2Id);
+
+        // A row with no locale.
+        ItemEnchantTransform shared = rows.Single(row => row.output1Id == 31001397);
+        Assert.AreEqual(6, shared.inputRank);
+        Assert.AreEqual(22, shared.inputItemId.Length);
+        Assert.AreEqual(5, shared.output1Rank);
+    }
+
+    [TestMethod]
     public void TestParseItemExchangeScroll() {
         foreach ((_, _) in _parser.ParseItemExchangeScroll()) {
             continue;

@@ -43,6 +43,7 @@ public class TableParser {
     private readonly XmlSerializer instrumentInfoSerializer;
     private readonly XmlSerializer interactObjectSerializer;
     private readonly XmlSerializer itemBreakIngredientSerializer;
+    private readonly XmlSerializer itemEnchantTransformSerializer;
     private readonly XmlSerializer itemExchangeScrollSerializer;
     private readonly XmlSerializer itemExtractionSerializer;
     private readonly XmlSerializer itemGemstoneUpgradeSerializer;
@@ -167,6 +168,7 @@ public class TableParser {
         instrumentInfoSerializer = new XmlSerializer(typeof(InstrumentInfoRoot));
         interactObjectSerializer = new XmlSerializer(typeof(InteractObjectRoot));
         itemBreakIngredientSerializer = new XmlSerializer(typeof(ItemBreakIngredientRoot));
+        itemEnchantTransformSerializer = new XmlSerializer(typeof(ItemEnchantTransformRoot));
         itemExchangeScrollSerializer = new XmlSerializer(typeof(ItemExchangeScrollRoot));
         itemExtractionSerializer = new XmlSerializer(typeof(ItemExtractionRoot));
         itemGemstoneUpgradeSerializer = new XmlSerializer(typeof(ItemGemstoneUpgradeRoot));
@@ -619,6 +621,14 @@ public class TableParser {
         foreach (ItemBreakIngredient item in data.item) {
             yield return (item.ItemID, item);
         }
+    }
+
+    public IEnumerable<ItemEnchantTransform> ParseItemEnchantTransform() {
+        XmlReader reader = xmlReader.GetXmlReader(xmlReader.GetEntry("table/itemenchanttransform.xml"));
+        var data = itemEnchantTransformSerializer.Deserialize(reader) as ItemEnchantTransformRoot;
+        Debug.Assert(data != null);
+
+        return data.transform;
     }
 
     public IEnumerable<(int ExchangeId, ItemExchangeScroll ScrollExchange)> ParseItemExchangeScroll() {
